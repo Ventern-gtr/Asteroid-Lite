@@ -1,6 +1,6 @@
 # Asteroid Lite
-is a very simple GUI for gorilla tag to use for comp cheating / ranked cheating. so you can easily get sapphire in GTC.
-rest assure this menu is fully undetected and wont get u banned unless its via reports
+A sleek, simple GUI designed for Gorilla Tag to give you an edge in competitive and ranked gameplay. With this menu, reaching Sapphire rank is a breeze.
+It's fully undetected, meaning you’re safe unless reported.
 
 Pros ✔️:
 Full undetected,
