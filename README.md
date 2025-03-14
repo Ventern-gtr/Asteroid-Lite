@@ -12,3 +12,7 @@ Cons ❌:
 susceptible to streams,
 susceptible to in game checks,
 susceptible to deep checks.
+
+
+Discord: https://discord.gg/TcgMCaXeQ4
+Guns.lol: https://guns.lol/ventern
