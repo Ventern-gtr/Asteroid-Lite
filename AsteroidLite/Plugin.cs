@@ -258,14 +258,11 @@ namespace AsteroidLite
         internal void Update()
         {
             this.RoundValues();
-            bool flag = !this.IsInit && Player.Instance && PhotonNetwork.LocalPlayer != null && Plugin.GUIStyleInit;
-            if (flag)
+            if (!this.IsInit && Player.Instance && PhotonNetwork.LocalPlayer != null && Plugin.GUIStyleInit)
             {
-                bool flag2 = this.Holder != null;
-                if (flag2)
+                if (this.Holder != null)
                 {
-                    bool flag3 = !PhotonNetwork.LocalPlayer.CustomProperties.ContainsKey("AsteroidLite");
-                    if (flag3)
+                    if (!PhotonNetwork.LocalPlayer.CustomProperties.ContainsKey("AsteroidLite"))
                     {
                         PhotonNetwork.LocalPlayer.CustomProperties.Add("AsteroidLite", "AsteroidLite");
                     }
@@ -280,27 +277,21 @@ namespace AsteroidLite
                     Debug.Log("[Asteroid] Input Library Loaded");
                 }
             }
-            bool isInit = this.IsInit;
-            if (isInit)
+            if (this.IsInit)
             {
-                bool keyDown = UnityInput.Current.GetKeyDown(KeyCode.Insert);
-                if (keyDown)
+                if (UnityInput.Current.GetKeyDown(KeyCode.Insert))
                 {
                     Plugin.GUIOpen = !Plugin.GUIOpen;
                     GorillaTagger.Instance.offlineVRRig.PlayHandTapLocal(Plugin.GUIOpen ? 114 : 115, false, 0.2f);
                     Debug.Log(Plugin.GUIOpen ? "[Asteroid] Menu Opened" : "[Asteroid] Menu Closed");
                 }
-                bool speedBoost = Plugin.SpeedBoost;
-                if (speedBoost)
+                if (Plugin.SpeedBoost)
                 {
-                    bool triggerBoost = Plugin.TriggerBoost;
-                    if (triggerBoost)
+                    if (Plugin.TriggerBoost)
                     {
-                        bool flag4 = !Plugin.FlippedTrigger;
-                        if (flag4)
+                        if (!Plugin.FlippedTrigger)
                         {
-                            bool flag5 = InputLibrary.LeftTrigger();
-                            if (flag5)
+                            if (InputLibrary.LeftTrigger())
                             {
                                 Player.Instance.maxJumpSpeed = Plugin.MaxJump;
                                 Player.Instance.jumpMultiplier = Plugin.JumpMulti;
@@ -311,8 +302,7 @@ namespace AsteroidLite
                         }
                         else
                         {
-                            bool flag6 = InputLibrary.LeftTrigger();
-                            if (flag6)
+                            if (InputLibrary.LeftTrigger())
                             {
                                 Player.Instance.maxJumpSpeed = 6.5f;
                                 Player.Instance.jumpMultiplier = 1.1f;
@@ -335,21 +325,17 @@ namespace AsteroidLite
                     Plugin.MaxJump = 6.5f;
                     Plugin.JumpMulti = 1.1f;
                 }
-                bool wallWalk = Plugin.WallWalk;
-                if (wallWalk)
+                if (Plugin.WallWalk)
                 {
-                    bool flag7 = Player.Instance.wasLeftHandTouching || Player.Instance.wasRightHandTouching;
-                    if (flag7)
+                    if (Player.Instance.wasLeftHandTouching || Player.Instance.wasRightHandTouching)
                     {
                         RaycastHit raycastHit = (RaycastHit)typeof(Player).GetField("lastHitInfoHand", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(Player.Instance);
                         Plugin.walkPos = raycastHit.point;
                         Plugin.walkNormal = raycastHit.normal;
                     }
-                    bool flag8 = InputLibrary.RightGrip();
-                    if (flag8)
+                    if (InputLibrary.RightGrip())
                     {
-                        bool flag9 = Plugin.walkPos != Vector3.zero;
-                        if (flag9)
+                        if (Plugin.walkPos != Vector3.zero)
                         {
                             Plugin.WallWalkPowerNeg = -Plugin.WallWalkPower;
                             Player.Instance.bodyCollider.attachedRigidbody.AddForce(Plugin.walkNormal * Plugin.WallWalkPowerNeg, ForceMode.Acceleration);
@@ -357,22 +343,18 @@ namespace AsteroidLite
                         }
                     }
                 }
-                bool tagAura = Plugin.TagAura;
-                if (tagAura)
+                if (Plugin.TagAura)
                 {
-                    bool flag10 = InputLibrary.LeftJoystick();
-                    if (flag10)
+                    if (InputLibrary.LeftJoystick())
                     {
                         foreach (VRRig vrrig in GorillaParent.instance.vrrigs)
                         {
                             Vector3 position = vrrig.headMesh.transform.position;
                             Vector3 position2 = GorillaTagger.Instance.offlineVRRig.head.rigTarget.position;
                             float num = Vector3.Distance(position, position2);
-                            bool flag11 = GorillaTagger.Instance.offlineVRRig.setMatIndex == 1 || GorillaTagger.Instance.offlineVRRig.setMatIndex == 2 || GorillaTagger.Instance.offlineVRRig.setMatIndex == 13;
-                            if (flag11)
+                            if (GorillaTagger.Instance.offlineVRRig.setMatIndex == 1 || GorillaTagger.Instance.offlineVRRig.setMatIndex == 2 || GorillaTagger.Instance.offlineVRRig.setMatIndex == 13)
                             {
-                                bool flag12 = !vrrig.mainSkin.material.name.Contains("fected") && !Player.Instance.disableMovement && num < Plugin.TagAuraRange;
-                                if (flag12)
+                                if (!vrrig.mainSkin.material.name.Contains("fected") && !Player.Instance.disableMovement && num < Plugin.TagAuraRange)
                                 {
                                     Player.Instance.rightControllerTransform.position = position;
                                 }
@@ -380,11 +362,9 @@ namespace AsteroidLite
                         }
                     }
                 }
-                bool longjump = Plugin.Longjump;
-                if (longjump)
+                if (Plugin.Longjump)
                 {
-                    bool flag13 = InputLibrary.RightTrigger();
-                    if (flag13)
+                    if (InputLibrary.RightTrigger())
                     {
                         Player.Instance.maxJumpSpeed = 10f;
                         Player.Instance.jumpMultiplier = Plugin.JumpMulti * Plugin.LongjumpMulti;
@@ -393,36 +373,29 @@ namespace AsteroidLite
                     Player.Instance.maxJumpSpeed = Plugin.MaxJump;
                     Player.Instance.jumpMultiplier = Plugin.JumpMulti;
                 }
-                bool longarms = Plugin.Longarms;
-                if (longarms)
+                if (Plugin.Longarms)
                 {
                     Player.Instance.leftControllerTransform.transform.position = GorillaTagger.Instance.headCollider.transform.position - (GorillaTagger.Instance.headCollider.transform.position - GorillaTagger.Instance.leftHandTransform.position) * Plugin.LongarmsMulti;
                     Player.Instance.rightControllerTransform.transform.position = GorillaTagger.Instance.headCollider.transform.position - (GorillaTagger.Instance.headCollider.transform.position - GorillaTagger.Instance.rightHandTransform.position) * Plugin.LongarmsMulti;
                 }
-                bool psa = Plugin.PSA;
-                if (psa)
+                if (Plugin.PSA)
                 {
-                    bool flag14 = InputLibrary.RightJoystick();
-                    if (flag14)
+                    if (InputLibrary.RightJoystick())
                     {
                         Player.Instance.transform.position += Player.Instance.bodyCollider.transform.forward * Plugin.PSASpeed * Time.deltaTime;
                     }
                 }
-                bool gripToLag = Plugin.GripToLag;
-                if (gripToLag)
+                if (Plugin.GripToLag)
                 {
-                    bool flag15 = InputLibrary.LeftGrip();
-                    if (flag15)
+                    if (InputLibrary.LeftGrip())
                     {
-                        bool flag16 = Plugin.LagAmmount == 1f;
-                        if (flag16)
+                        if (Plugin.LagAmmount == 1f)
                         {
                             foreach (GameObject gameObject in UnityEngine.Object.FindObjectsOfType<GameObject>())
                             {
                             }
                         }
-                        bool flag17 = Plugin.LagAmmount == 2f;
-                        if (flag17)
+                        if (Plugin.LagAmmount == 2f)
                         {
                             foreach (GameObject gameObject2 in UnityEngine.Object.FindObjectsOfType<GameObject>())
                             {
@@ -431,8 +404,7 @@ namespace AsteroidLite
                             {
                             }
                         }
-                        bool flag18 = Plugin.LagAmmount == 3f;
-                        if (flag18)
+                        if (Plugin.LagAmmount == 3f)
                         {
                             foreach (GameObject gameObject4 in UnityEngine.Object.FindObjectsOfType<GameObject>())
                             {
@@ -444,8 +416,7 @@ namespace AsteroidLite
                             {
                             }
                         }
-                        bool flag19 = Plugin.LagAmmount == 4f;
-                        if (flag19)
+                        if (Plugin.LagAmmount == 4f)
                         {
                             foreach (GameObject gameObject7 in UnityEngine.Object.FindObjectsOfType<GameObject>())
                             {
@@ -463,8 +434,7 @@ namespace AsteroidLite
                             {
                             }
                         }
-                        bool flag20 = Plugin.LagAmmount == 5f;
-                        if (flag20)
+                        if (Plugin.LagAmmount == 5f)
                         {
                             foreach (GameObject gameObject12 in UnityEngine.Object.FindObjectsOfType<GameObject>())
                             {
