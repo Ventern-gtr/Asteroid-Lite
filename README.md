@@ -4,11 +4,11 @@ rest assure this menu is fully undetected and wont get u banned unless its via r
 
 Pros ✔️:
 Full undetected
-Great Features
-Clean GUI
-Constant Updates
+Great Features,
+Clean GUI,
+Constant Updates.
 
 Cons ❌:
-susceptible to streams
-susceptible to in game checks
-susceptible to deep checks
+susceptible to streams,
+susceptible to in game checks,
+susceptible to deep checks.
