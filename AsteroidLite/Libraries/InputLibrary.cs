@@ -8,8 +8,7 @@ namespace AsteroidLite.Libraries
     {
         public void Update()
         {
-            bool flag = InputLibrary.IsSteam && !GameObject.Find("[SteamVR]");
-            if (flag)
+            if (InputLibrary.IsSteam && !GameObject.Find("[SteamVR]"))
             {
                 Debug.Log("[Input Lib] Oculus Mode enabled");
                 InputLibrary.IsSteam = false;

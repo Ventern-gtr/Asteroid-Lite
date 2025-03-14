@@ -1,10 +1,10 @@
-﻿using System;
-using AsteroidLite.Libraries;
+﻿using AsteroidLite.Libraries;
+using BepInEx;
+using GorillaLocomotion;
+using Photon.Pun;
+using System;
 using System.IO;
 using System.Reflection;
-using BepInEx;
-using Photon.Pun;
-using GorillaLocomotion;
 using UnityEngine;
 
 namespace AsteroidLite
@@ -69,6 +69,7 @@ namespace AsteroidLite
                 }
             }
             if (Plugin.GUIOpen && Plugin.GUIStyleInit && this.IsInit)
+
             {
                 GUI.color = Color.black;
                 GUI.contentColor = Color.red;
@@ -76,7 +77,7 @@ namespace AsteroidLite
                 string str = "PING: " + PhotonNetwork.GetPing().ToString();
                 string str2 = "Asteroid Lite | " + this.GetFPS() + " | " + str;
                 GUI.Box(this.windowRect, string.Empty);
-                this.windowRect = GUI.Window(846, this.windowRect, new GUI.WindowFunction(this.Window), "<color=#FF3B00>" + str2 + "</color>", this.WindowStyle);
+                this.windowRect = GUI.Window(633, this.windowRect, new GUI.WindowFunction(this.Window), "<color=#FF3B00>" + str2 + "</color>", this.WindowStyle);
             }
         }
 
@@ -118,6 +119,8 @@ namespace AsteroidLite
         internal static float PSASpeed = 1f;
         internal static bool GripToLag = false;
         internal static float LagAmmount = 1f;
+        internal static bool Chams = false;
+        internal static bool TargetChams = false;
         #endregion Bool/Floats/Ints fields
 
         internal void RoundValues()
@@ -207,8 +210,8 @@ namespace AsteroidLite
                 }
                 if (Longjump)
                 {
-                   GUILayout.Label($"Longjump Multi: {LongjumpMulti}x", this.LabelStyle);
-                   LongjumpMulti = GUILayout.HorizontalSlider(LongjumpMulti, 0f, 3f, GUILayout.MaxWidth(420f));
+                    GUILayout.Label($"Longjump Multi: {LongjumpMulti}x", this.LabelStyle);
+                    LongjumpMulti = GUILayout.HorizontalSlider(LongjumpMulti, 0f, 3f, GUILayout.MaxWidth(420f));
                 }
                 if (GUILayout.Button($"Longarms: {Longarms}", GUILayout.MaxWidth(420f)))
                 {
@@ -239,6 +242,19 @@ namespace AsteroidLite
                 {
                     GUILayout.Label($"Lag Ammount: {LagAmmount}x", this.LabelStyle);
                     Plugin.LagAmmount = GUILayout.HorizontalSlider(Plugin.LagAmmount, 0f, 5f, GUILayout.MaxWidth(420f));
+                }
+                if (GUILayout.Button($"Chams: {Chams}", GUILayout.MaxWidth(420f)))
+                {
+                    Chams = !Chams;
+                    GorillaTagger.Instance.offlineVRRig.PlayHandTapLocal(Chams ? 114 : 115, false, 0.2f);
+                }
+                if (Chams)
+                {
+                    if (GUILayout.Button($"Target Only: {TargetChams}", GUILayout.MaxWidth(420f)))
+                    {
+                        TargetChams = !TargetChams;
+                        GorillaTagger.Instance.offlineVRRig.PlayHandTapLocal(TargetChams ? 114 : 115, false, 0.2f);
+                    }
                 }
                 GUI.EndScrollView();
             }
@@ -281,7 +297,7 @@ namespace AsteroidLite
             {
                 if (UnityInput.Current.GetKeyDown(KeyCode.Insert))
                 {
-                    Plugin.GUIOpen = !Plugin.GUIOpen;
+                    GUIOpen = !GUIOpen;
                     GorillaTagger.Instance.offlineVRRig.PlayHandTapLocal(Plugin.GUIOpen ? 114 : 115, false, 0.2f);
                     Debug.Log(Plugin.GUIOpen ? "[Asteroid] Menu Opened" : "[Asteroid] Menu Closed");
                 }
@@ -327,7 +343,7 @@ namespace AsteroidLite
                 }
                 if (Plugin.WallWalk)
                 {
-                    if (Player.Instance.wasLeftHandTouching || Player.Instance.wasRightHandTouching)
+                    if (Player.Instance.wasLeftHandColliding || Player.Instance.wasRightHandColliding)
                     {
                         RaycastHit raycastHit = (RaycastHit)typeof(Player).GetField("lastHitInfoHand", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(Player.Instance);
                         Plugin.walkPos = raycastHit.point;
@@ -380,10 +396,7 @@ namespace AsteroidLite
                 }
                 if (Plugin.PSA)
                 {
-                    if (InputLibrary.RightJoystick())
-                    {
-                        Player.Instance.transform.position += Player.Instance.bodyCollider.transform.forward * Plugin.PSASpeed * Time.deltaTime;
-                    }
+                    Player.Instance.bodyCollider.attachedRigidbody.AddForce(ControllerInputPoller.instance.rightControllerPrimary2DAxis * 2, ForceMode.Acceleration);
                 }
                 if (Plugin.GripToLag)
                 {
@@ -453,6 +466,90 @@ namespace AsteroidLite
                             }
                             foreach (GameObject gameObject17 in UnityEngine.Object.FindObjectsOfType<GameObject>())
                             {
+                            }
+                        }
+                    }
+                }
+                if (Chams)
+                {
+                    if (TargetChams)
+                    {
+                        foreach (VRRig vrrig in GorillaParent.instance.vrrigs)
+                        {
+                            if (RigManager.PlayerIsTagged(GorillaTagger.Instance.offlineVRRig))
+                            {
+                                if (!vrrig.isOfflineVRRig)
+                                {
+                                    if (!RigManager.PlayerIsTagged(vrrig))
+                                    {
+                                        RigManager.FixRigMaterialESPColors(vrrig);
+                                        vrrig.mainSkin.material.shader = Shader.Find("GUI/Text Shader");
+                                        vrrig.mainSkin.material.color = new Color(1f, 0.3f, 0.1f, 0.5f);
+                                    }
+                                    else
+                                    {
+                                        vrrig.mainSkin.material.shader = Shader.Find("GorillaTag/UberShader");
+                                        vrrig.mainSkin.material.color = vrrig.playerColor;
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                if (!vrrig.isOfflineVRRig)
+                                {
+                                    if (RigManager.PlayerIsTagged(vrrig))
+                                    {
+                                        RigManager.FixRigMaterialESPColors(vrrig);
+                                        vrrig.mainSkin.material.shader = Shader.Find("GUI/Text Shader");
+                                        vrrig.mainSkin.material.color = new Color(1f, 0.3f, 0.1f, 0.5f);
+                                    }
+                                    else
+                                    {
+                                        vrrig.mainSkin.material.shader = Shader.Find("GorillaTag/UberShader");
+                                        vrrig.mainSkin.material.color = vrrig.playerColor;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    else
+                    {
+                        foreach (VRRig vrrig in GorillaParent.instance.vrrigs)
+                        {
+                            if (RigManager.PlayerIsTagged(GorillaTagger.Instance.offlineVRRig))
+                            {
+                                if (!vrrig.isOfflineVRRig)
+                                {
+                                    RigManager.FixRigMaterialESPColors(vrrig);
+                                    if (!RigManager.PlayerIsTagged(vrrig))
+                                    {
+
+                                        vrrig.mainSkin.material.shader = Shader.Find("GUI/Text Shader");
+                                        vrrig.mainSkin.material.color = new Color(0.45f, 0f, 1f, 0.5f);
+                                    }
+                                    else
+                                    {
+                                        vrrig.mainSkin.material.shader = Shader.Find("GUI/Text Shader");
+                                        vrrig.mainSkin.material.color = new Color(1f, 0.3f, 0.1f, 0.5f);
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                if (!vrrig.isOfflineVRRig)
+                                {
+                                    RigManager.FixRigMaterialESPColors(vrrig);
+                                    if (RigManager.PlayerIsTagged(vrrig))
+                                    {
+                                        vrrig.mainSkin.material.shader = Shader.Find("GUI/Text Shader");
+                                        vrrig.mainSkin.material.color = new Color(1f, 0.3f, 0.1f, 0.5f);
+                                    }
+                                    else
+                                    {
+                                        vrrig.mainSkin.material.shader = Shader.Find("GUI/Text Shader");
+                                        vrrig.mainSkin.material.color = new Color(0.45f, 0f, 1f, 0.5f);
+                                    }
+                                }
                             }
                         }
                     }

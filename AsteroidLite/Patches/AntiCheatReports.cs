@@ -11,11 +11,9 @@ namespace AsteroidLite.Patches
     {
         private static void Prefix(string susReason, string susId, string susNick)
         {
-            bool flag = susId != null && susNick != null && susReason != null;
-            if (flag)
+            if (susId != null && susNick != null && susReason != null)
             {
-                bool flag2 = susId == PhotonNetwork.LocalPlayer.UserId;
-                if (flag2)
+                if (susId == PhotonNetwork.LocalPlayer.UserId)
                 {
                     susReason = null;
                     susNick = null;
