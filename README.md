@@ -3,7 +3,7 @@ is a very simple GUI for gorilla tag to use for comp cheating / ranked cheating.
 rest assure this menu is fully undetected and wont get u banned unless its via reports
 
 Pros ✔️:
-Full undetected
+Full undetected,
 Great Features,
 Clean GUI,
 Constant Updates.
