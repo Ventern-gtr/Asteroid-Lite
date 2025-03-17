@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace AsteroidLitePatches
+namespace AsteroidLite.Patches
 {
     [HarmonyPatch(typeof(GorillaNetworkPublicTestsJoin))]
     [HarmonyPatch("GracePeriod", MethodType.Normal)]
