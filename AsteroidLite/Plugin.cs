@@ -6,7 +6,6 @@ using System;
 using System.IO;
 using System.Reflection;
 using UnityEngine;
-using AsteroidLite.Libraries;
 
 namespace AsteroidLite
 {
@@ -114,6 +113,7 @@ namespace AsteroidLite
         internal Vector2 scrollPosition = Vector2.zero;
         internal float contentHeight = 2400f;
         internal static bool DontRepeat = false;
+        internal static GorillaSurfaceOverride[] surfaceOverrides;
         #endregion BackEnd Fields
 
         #region Bool/Floats/Ints fields
@@ -142,6 +142,9 @@ namespace AsteroidLite
         internal static float AntiReportRange = 0.35f;
         internal static bool AntiModerator = false;
         internal static bool LogModIDS = false;
+        internal static bool ExtraVel = false;
+        internal static float ExtraVelMax = 1f;
+        internal static float ExtraVelMin = 1f;
         #endregion Bool/Floats/Ints fields
 
         internal void RoundValues()
@@ -150,11 +153,13 @@ namespace AsteroidLite
             Plugin.JumpMulti = (float)Math.Round((double)Plugin.JumpMulti, 2);
             Plugin.WallWalkPower = (float)Math.Round((double)Plugin.WallWalkPower, 1);
             Plugin.TagAuraRange = (float)Math.Round((double)Plugin.TagAuraRange, 1);
-            Plugin.LongjumpMulti = (float)Math.Round((double)Plugin.LongjumpMulti, 1);
+            Plugin.LongjumpMulti = (float)Math.Round((double)Plugin.LongjumpMulti, 2);
             Plugin.LongarmsMulti = (float)Math.Round((double)Plugin.LongarmsMulti, 1);
             Plugin.PSASpeed = (float)Math.Round((double)Plugin.PSASpeed, 0);
             Plugin.LagAmmount = (float)Math.Round((double)Plugin.LagAmmount, 0);
             Plugin.AntiReportRange = (float)Math.Round((double)Plugin.AntiReportRange, 2);
+            Plugin.ExtraVelMax = (float)Math.Round((double)Plugin.ExtraVelMax, 2);
+            Plugin.ExtraVelMin = (float)Math.Round((double)Plugin.ExtraVelMin, 2);
         }
 
         internal void Window(int windowID)
@@ -204,6 +209,31 @@ namespace AsteroidLite
                     Plugin.MaxJump = GUILayout.HorizontalSlider(Plugin.MaxJump, 6.5f, 9f, GUILayout.MaxWidth(420f));
                     GUILayout.Label($"JumpMulti: {JumpMulti}", this.LabelStyle);
                     Plugin.JumpMulti = GUILayout.HorizontalSlider(Plugin.JumpMulti, 1.1f, 1.7f, GUILayout.MaxWidth(420f));
+                }
+                if (GUILayout.Button($"ExtraVel: {Plugin.ExtraVel}", GUILayout.MaxWidth(420f)))
+                {
+                    Plugin.ExtraVel = !Plugin.ExtraVel;
+                    GorillaTagger.Instance.offlineVRRig.PlayHandTapLocal(Plugin.ExtraVel ? 114 : 115, false, 0.2f);
+                }
+                if (Plugin.ExtraVel)
+                {
+                    if (GUILayout.Button($"TriggerBoost: {TriggerBoost}", GUILayout.MaxWidth(420f)))
+                    {
+                        Plugin.TriggerBoost = !Plugin.TriggerBoost;
+                        GorillaTagger.Instance.offlineVRRig.PlayHandTapLocal(Plugin.TriggerBoost ? 114 : 115, false, 0.2f);
+                    }
+                    if (Plugin.TriggerBoost)
+                    {
+                        if (GUILayout.Button($"Flip Trigger: {FlippedTrigger}", GUILayout.MaxWidth(420f)))
+                        {
+                            Plugin.FlippedTrigger = !Plugin.FlippedTrigger;
+                            GorillaTagger.Instance.offlineVRRig.PlayHandTapLocal(Plugin.FlippedTrigger ? 114 : 115, false, 0.2f);
+                        }
+                    }
+                    GUILayout.Label($"ExtraVelMax: {ExtraVelMax}", this.LabelStyle);
+                    ExtraVelMax = GUILayout.HorizontalSlider(ExtraVelMax, 1f, 2f, GUILayout.MaxWidth(420f));
+                    GUILayout.Label($"ExtraVelMin: {ExtraVelMin}", this.LabelStyle);
+                    ExtraVelMin = GUILayout.HorizontalSlider(ExtraVelMin, 1f, 2f, GUILayout.MaxWidth(420f));
                 }
                 if (GUILayout.Button($"WallWalk: {WallWalk}", GUILayout.MaxWidth(420f)))
                 {
@@ -306,10 +336,6 @@ namespace AsteroidLite
                         Plugin.LogModIDS = !Plugin.LogModIDS;
                         GorillaTagger.Instance.offlineVRRig.PlayHandTapLocal(Plugin.LogModIDS ? 114 : 115, false, 0.2f);
                     }
-                }
-                if (GUILayout.Button("Test notif", GUILayout.MaxWidth(420f)))
-                {
-                    Notify.Send("Asteroid", "test notification", AsteroidOrange);
                 }
                 GUI.EndScrollView();
             }
@@ -648,9 +674,9 @@ namespace AsteroidLite
                             if (LogModIDS)
                             {
                                 string fileName = "Moderator ID: " + vrrig.OwningNetPlayer.NickName;
-                                if (!Directory.Exists("iisStupidMenu"))
+                                if (!Directory.Exists("asteroid"))
                                 {
-                                    Directory.CreateDirectory("iisStupidMenu");
+                                    Directory.CreateDirectory("asteroid");
                                 }
                                 File.WriteAllText(fileName, string.Concat(new string[]
                                 {
@@ -661,6 +687,65 @@ namespace AsteroidLite
                             PhotonNetwork.Disconnect();
                             Notify.Send("Asteroid", $"Moderator named: {RigManager.GetPlayerFromVRRig(vrrig).NickName}, was found you were disconnected!", AsteroidOrange);
                         }
+                    }
+                }
+                if (ExtraVel)
+                {
+                    if (surfaceOverrides != null)
+                    {
+                        if (Plugin.TriggerBoost)
+                        {
+                            if (!Plugin.FlippedTrigger)
+                            {
+                                if (InputLibrary.LeftTrigger())
+                                {
+                                    foreach (GorillaSurfaceOverride gorillaSurfaceOverride in surfaceOverrides)
+                                    {
+                                        if (gorillaSurfaceOverride.extraVelMaxMultiplier != ExtraVelMin || gorillaSurfaceOverride.extraVelMultiplier != ExtraVelMin)
+                                        {
+                                            gorillaSurfaceOverride.extraVelMaxMultiplier = ExtraVelMax;
+                                            gorillaSurfaceOverride.extraVelMultiplier = ExtraVelMin;
+                                        }
+                                    }
+                                    return;
+                                }
+                                foreach (GorillaSurfaceOverride gorillaSurfaceOverride in surfaceOverrides)
+                                {
+                                    if (gorillaSurfaceOverride.extraVelMaxMultiplier != 1f || gorillaSurfaceOverride.extraVelMultiplier != 1f)
+                                    {
+                                        gorillaSurfaceOverride.extraVelMaxMultiplier = 1f;
+                                        gorillaSurfaceOverride.extraVelMultiplier = 1f;
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                if (InputLibrary.LeftTrigger())
+                                {
+                                    foreach (GorillaSurfaceOverride gorillaSurfaceOverride in surfaceOverrides)
+                                    {
+                                        if (gorillaSurfaceOverride.extraVelMaxMultiplier != 1f || gorillaSurfaceOverride.extraVelMultiplier != 1f)
+                                        {
+                                            gorillaSurfaceOverride.extraVelMaxMultiplier = 1f;
+                                            gorillaSurfaceOverride.extraVelMultiplier = 1f;
+                                        }
+                                    }
+                                    return;
+                                }
+                                foreach (GorillaSurfaceOverride gorillaSurfaceOverride in surfaceOverrides)
+                                {
+                                    if (gorillaSurfaceOverride.extraVelMaxMultiplier != ExtraVelMin || gorillaSurfaceOverride.extraVelMultiplier != ExtraVelMin)
+                                    {
+                                        gorillaSurfaceOverride.extraVelMaxMultiplier = ExtraVelMax;
+                                        gorillaSurfaceOverride.extraVelMultiplier = ExtraVelMin;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    else
+                    {
+                        surfaceOverrides = UnityEngine.Object.FindObjectsOfType<GorillaSurfaceOverride>();
                     }
                 }
             }
