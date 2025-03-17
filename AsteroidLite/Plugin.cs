@@ -6,10 +6,11 @@ using System;
 using System.IO;
 using System.Reflection;
 using UnityEngine;
+using AsteroidLite.Libraries;
 
 namespace AsteroidLite
 {
-    [BepInPlugin("Ventern.AsteroidLite", "Ventern - AsteroidLite", "1.0")]
+    [BepInPlugin("Ventern.AsteroidLite", "Ventern - AsteroidLite", "1.0.0")]
     public class Plugin : BaseUnityPlugin
     {
         internal void Start()
@@ -26,6 +27,20 @@ namespace AsteroidLite
                 Application.OpenURL("https://guns.lol/Ventern");
                 File.Create(text).Close();
             }
+        }
+
+        public static void VisualizeAura(Vector3 position, float range, Color color)
+        {
+            GameObject gameObject = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+            UnityEngine.Object.Destroy(gameObject, Time.deltaTime);
+            UnityEngine.Object.Destroy(gameObject.GetComponent<Collider>());
+            UnityEngine.Object.Destroy(gameObject.GetComponent<Rigidbody>());
+            gameObject.transform.position = position;
+            gameObject.transform.localScale = new Vector3(range, range, range);
+            Color color2 = color;
+            color2.a = 0.25f;
+            gameObject.GetComponent<Renderer>().material.shader = Shader.Find("GUI/Text Shader");
+            gameObject.GetComponent<Renderer>().material.color = color2;
         }
 
         internal string GetFPS()
@@ -90,6 +105,7 @@ namespace AsteroidLite
         internal GUIStyle ButtonStyle;
         internal GUIStyle LabelStyle;
         internal Color Orange = new Color(1f, 0.4f, 0f);
+        internal static Color AsteroidOrange = new Color(1f, 0.4f, 0f);
         internal static bool InfoTab = false;
         internal float deltaTime = 0f;
         internal bool IsInit = false;
@@ -121,6 +137,11 @@ namespace AsteroidLite
         internal static float LagAmmount = 1f;
         internal static bool Chams = false;
         internal static bool TargetChams = false;
+        internal static bool AntiReport = false;
+        internal static bool AntiReportVis = false;
+        internal static float AntiReportRange = 0.35f;
+        internal static bool AntiModerator = false;
+        internal static bool LogModIDS = false;
         #endregion Bool/Floats/Ints fields
 
         internal void RoundValues()
@@ -133,6 +154,7 @@ namespace AsteroidLite
             Plugin.LongarmsMulti = (float)Math.Round((double)Plugin.LongarmsMulti, 1);
             Plugin.PSASpeed = (float)Math.Round((double)Plugin.PSASpeed, 0);
             Plugin.LagAmmount = (float)Math.Round((double)Plugin.LagAmmount, 0);
+            Plugin.AntiReportRange = (float)Math.Round((double)Plugin.AntiReportRange, 2);
         }
 
         internal void Window(int windowID)
@@ -256,6 +278,39 @@ namespace AsteroidLite
                         GorillaTagger.Instance.offlineVRRig.PlayHandTapLocal(TargetChams ? 114 : 115, false, 0.2f);
                     }
                 }
+
+                if (GUILayout.Button($"AntiReport: {Plugin.AntiReport}", GUILayout.MaxWidth(420f)))
+                {
+                    Plugin.AntiReport = !Plugin.AntiReport;
+                    GorillaTagger.Instance.offlineVRRig.PlayHandTapLocal(Plugin.AntiReport ? 114 : 115, false, 0.2f);
+                }
+                if (Plugin.AntiReport)
+                {
+                    if (GUILayout.Button($"AntiReport Visble: {AntiReportVis}", GUILayout.MaxWidth(420f)))
+                    {
+                        Plugin.AntiReportVis = !Plugin.AntiReportVis;
+                        GorillaTagger.Instance.offlineVRRig.PlayHandTapLocal(Plugin.TriggerBoost ? 114 : 115, false, 0.2f);
+                    }
+                    GUILayout.Label($"AntiReport Range: {AntiReportRange}", this.LabelStyle);
+                    Plugin.AntiReportRange = GUILayout.HorizontalSlider(Plugin.AntiReportRange, 0f, 1f, GUILayout.MaxWidth(420f));
+                }
+                if (GUILayout.Button($"AntiModerator: {Plugin.AntiModerator}", GUILayout.MaxWidth(420f)))
+                {
+                    Plugin.AntiModerator = !Plugin.AntiModerator;
+                    GorillaTagger.Instance.offlineVRRig.PlayHandTapLocal(Plugin.AntiModerator ? 114 : 115, false, 0.2f);
+                }
+                if (AntiModerator)
+                {
+                    if (GUILayout.Button($"Log Mod IDS: {Plugin.LogModIDS}", GUILayout.MaxWidth(420f)))
+                    {
+                        Plugin.LogModIDS = !Plugin.LogModIDS;
+                        GorillaTagger.Instance.offlineVRRig.PlayHandTapLocal(Plugin.LogModIDS ? 114 : 115, false, 0.2f);
+                    }
+                }
+                if (GUILayout.Button("Test notif", GUILayout.MaxWidth(420f)))
+                {
+                    Notify.Send("Asteroid", "test notification", AsteroidOrange);
+                }
                 GUI.EndScrollView();
             }
             else
@@ -274,6 +329,7 @@ namespace AsteroidLite
         internal void Update()
         {
             this.RoundValues();
+            Notify.Run();
             if (!this.IsInit && Player.Instance && PhotonNetwork.LocalPlayer != null && Plugin.GUIStyleInit)
             {
                 if (this.Holder != null)
@@ -287,7 +343,7 @@ namespace AsteroidLite
                 }
                 else
                 {
-                    Debug.Log("[Asteroid] Awaiting InputLibrary & NotifiLib!");
+                    Debug.Log("[Asteroid] Awaiting InputLibrary");
                     this.Holder = new GameObject("Holder");
                     this.Holder.AddComponent<InputLibrary>();
                     Debug.Log("[Asteroid] Input Library Loaded");
@@ -482,7 +538,7 @@ namespace AsteroidLite
                                 {
                                     if (!RigManager.PlayerIsTagged(vrrig))
                                     {
-                                        RigManager.FixRigMaterialESPColors(vrrig);
+                                        AsteroidLite.Libraries.Utilities.FixRigMaterialESPColors(vrrig);
                                         vrrig.mainSkin.material.shader = Shader.Find("GUI/Text Shader");
                                         vrrig.mainSkin.material.color = new Color(1f, 0.3f, 0.1f, 0.5f);
                                     }
@@ -499,7 +555,7 @@ namespace AsteroidLite
                                 {
                                     if (RigManager.PlayerIsTagged(vrrig))
                                     {
-                                        RigManager.FixRigMaterialESPColors(vrrig);
+                                        AsteroidLite.Libraries.Utilities.FixRigMaterialESPColors(vrrig);
                                         vrrig.mainSkin.material.shader = Shader.Find("GUI/Text Shader");
                                         vrrig.mainSkin.material.color = new Color(1f, 0.3f, 0.1f, 0.5f);
                                     }
@@ -520,7 +576,7 @@ namespace AsteroidLite
                             {
                                 if (!vrrig.isOfflineVRRig)
                                 {
-                                    RigManager.FixRigMaterialESPColors(vrrig);
+                                    AsteroidLite.Libraries.Utilities.FixRigMaterialESPColors(vrrig);
                                     if (!RigManager.PlayerIsTagged(vrrig))
                                     {
 
@@ -538,7 +594,7 @@ namespace AsteroidLite
                             {
                                 if (!vrrig.isOfflineVRRig)
                                 {
-                                    RigManager.FixRigMaterialESPColors(vrrig);
+                                    AsteroidLite.Libraries.Utilities.FixRigMaterialESPColors(vrrig);
                                     if (RigManager.PlayerIsTagged(vrrig))
                                     {
                                         vrrig.mainSkin.material.shader = Shader.Find("GUI/Text Shader");
@@ -551,6 +607,59 @@ namespace AsteroidLite
                                     }
                                 }
                             }
+                        }
+                    }
+                }
+                if (AntiReport && PhotonNetwork.InRoom)
+                {
+                    foreach (GorillaPlayerScoreboardLine line in GorillaScoreboardTotalUpdater.allScoreboardLines)
+                    {
+                        if (line.linePlayer == NetworkSystem.Instance.LocalPlayer)
+                        {
+
+                            Transform report = line.reportButton.gameObject.transform;
+                            if (AntiReportVis)
+                            {
+                                VisualizeAura(report.position + new Vector3(-0.1f, 0f, -0.1f), AntiReportRange, Color.red);
+                            }
+                            foreach (VRRig vrrig in GorillaParent.instance.vrrigs)
+                            {
+                                if (vrrig != GorillaTagger.Instance.offlineVRRig)
+                                {
+                                    float D1 = Vector3.Distance(vrrig.rightHandTransform.position, report.position + new Vector3(-0.1f, 0f, -0.1f));
+                                    float D2 = Vector3.Distance(vrrig.leftHandTransform.position, report.position + new Vector3(-0.1f, 0f, -0.1f));
+
+                                    if (D1 < AntiReportRange || D2 < AntiReportRange)
+                                    {
+                                        PhotonNetwork.Disconnect();
+                                        Notify.Send("Asteroid", $"Attempted Report from {RigManager.GetPlayerFromVRRig(vrrig).NickName}, you were disconnected!", AsteroidOrange);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                if (AntiModerator && PhotonNetwork.InRoom)
+                {
+                    foreach (VRRig vrrig in GorillaParent.instance.vrrigs)
+                    {
+                        if (vrrig.concatStringOfCosmeticsAllowed.Contains("LBAAD.") || vrrig.concatStringOfCosmeticsAllowed.Contains("LBAAK."))
+                        {
+                            if (LogModIDS)
+                            {
+                                string fileName = "Moderator ID: " + vrrig.OwningNetPlayer.NickName;
+                                if (!Directory.Exists("iisStupidMenu"))
+                                {
+                                    Directory.CreateDirectory("iisStupidMenu");
+                                }
+                                File.WriteAllText(fileName, string.Concat(new string[]
+                                {
+                                    "Player Name: " + vrrig.OwningNetPlayer.NickName,
+                                    "Player ID: " + vrrig.OwningNetPlayer.UserId
+                                }));
+                            }
+                            PhotonNetwork.Disconnect();
+                            Notify.Send("Asteroid", $"Moderator named: {RigManager.GetPlayerFromVRRig(vrrig).NickName}, was found you were disconnected!", AsteroidOrange);
                         }
                     }
                 }

@@ -12,20 +12,6 @@ namespace AsteroidLite.Libraries
     {
 
         // credits to iidk mod menu
-        private static Dictionary<VRRig, float> delays = new Dictionary<VRRig, float> { };
-        public static void FixRigMaterialESPColors(VRRig rig)
-        {
-            if ((delays.ContainsKey(rig) && Time.time > delays[rig]) || !delays.ContainsKey(rig))
-            {
-                if (delays.ContainsKey(rig))
-                    delays[rig] = Time.time + 5f;
-                else
-                    delays.Add(rig, Time.time + 5f);
-
-                rig.mainSkin.sharedMesh.colors32 = Enumerable.Repeat((Color32)Color.white, rig.mainSkin.sharedMesh.colors32.Length).ToArray();
-                rig.mainSkin.sharedMesh.colors = Enumerable.Repeat(Color.white, rig.mainSkin.sharedMesh.colors.Length).ToArray();
-            }
-        }
 
         public static VRRig GetVRRigFromPlayer(NetPlayer p)
         {
