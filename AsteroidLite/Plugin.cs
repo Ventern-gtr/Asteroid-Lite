@@ -4,6 +4,7 @@ using GorillaLocomotion;
 using Photon.Pun;
 using System;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using UnityEngine;
 
@@ -26,27 +27,6 @@ namespace AsteroidLite
                 Application.OpenURL("https://guns.lol/Ventern");
                 File.Create(text).Close();
             }
-        }
-
-        public static void VisualizeAura(Vector3 position, float range, Color color)
-        {
-            GameObject gameObject = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-            UnityEngine.Object.Destroy(gameObject, Time.deltaTime);
-            UnityEngine.Object.Destroy(gameObject.GetComponent<Collider>());
-            UnityEngine.Object.Destroy(gameObject.GetComponent<Rigidbody>());
-            gameObject.transform.position = position;
-            gameObject.transform.localScale = new Vector3(range, range, range);
-            Color color2 = color;
-            color2.a = 0.25f;
-            gameObject.GetComponent<Renderer>().material.shader = Shader.Find("GUI/Text Shader");
-            gameObject.GetComponent<Renderer>().material.color = color2;
-        }
-
-        internal string GetFPS()
-        {
-            this.deltaTime += (Time.deltaTime - this.deltaTime) * 0.1f;
-            float f = 1f / this.deltaTime;
-            return "FPS: " + Mathf.RoundToInt(f).ToString();
         }
 
         internal void OnGUI()
@@ -89,7 +69,7 @@ namespace AsteroidLite
                 GUI.contentColor = Color.red;
                 GUI.backgroundColor = Color.black;
                 string str = "PING: " + PhotonNetwork.GetPing().ToString();
-                string str2 = "Asteroid Lite | " + this.GetFPS() + " | " + str;
+                string str2 = "Asteroid Lite | " + AsteroidLite.Libraries.Utilities.GetFPS() + " | " + str;
                 GUI.Box(this.windowRect, string.Empty);
                 this.windowRect = GUI.Window(633, this.windowRect, new GUI.WindowFunction(this.Window), "<color=#FF3B00>" + str2 + "</color>", this.WindowStyle);
             }
@@ -106,7 +86,6 @@ namespace AsteroidLite
         internal Color Orange = new Color(1f, 0.4f, 0f);
         internal static Color AsteroidOrange = new Color(1f, 0.4f, 0f);
         internal static bool InfoTab = false;
-        internal float deltaTime = 0f;
         internal bool IsInit = false;
         internal static Vector3 walkPos;
         internal static Vector3 walkNormal;
@@ -145,6 +124,8 @@ namespace AsteroidLite
         internal static bool ExtraVel = false;
         internal static float ExtraVelMax = 1f;
         internal static float ExtraVelMin = 1f;
+        internal static bool RecRoom = false;
+        internal static float RecRoomPower = 1f;
         #endregion Bool/Floats/Ints fields
 
         internal void RoundValues()
@@ -160,6 +141,7 @@ namespace AsteroidLite
             Plugin.AntiReportRange = (float)Math.Round((double)Plugin.AntiReportRange, 2);
             Plugin.ExtraVelMax = (float)Math.Round((double)Plugin.ExtraVelMax, 2);
             Plugin.ExtraVelMin = (float)Math.Round((double)Plugin.ExtraVelMin, 2);
+            Plugin.RecRoomPower = (float)Math.Round((double)Plugin.RecRoomPower, 1);
         }
 
         internal void Window(int windowID)
@@ -308,7 +290,16 @@ namespace AsteroidLite
                         GorillaTagger.Instance.offlineVRRig.PlayHandTapLocal(TargetChams ? 114 : 115, false, 0.2f);
                     }
                 }
-
+                if (GUILayout.Button($"RecRoom: {RecRoom}", GUILayout.MaxWidth(420f)))
+                {
+                    RecRoom = !RecRoom;
+                    GorillaTagger.Instance.offlineVRRig.PlayHandTapLocal(RecRoom ? 114 : 115, false, 0.2f);
+                }
+                if (RecRoom)
+                {
+                    GUILayout.Label($"RecRoom Power: {RecRoomPower}", this.LabelStyle);
+                    Plugin.RecRoomPower = GUILayout.HorizontalSlider(Plugin.RecRoomPower, 0f, 10f, GUILayout.MaxWidth(420f));
+                }
                 if (GUILayout.Button($"AntiReport: {Plugin.AntiReport}", GUILayout.MaxWidth(420f)))
                 {
                     Plugin.AntiReport = !Plugin.AntiReport;
@@ -348,6 +339,7 @@ namespace AsteroidLite
                 GUILayout.Label("Longjump > Right Trigger", this.LabelStyle);
                 GUILayout.Label("PSA > RightJoystick", this.LabelStyle);
                 GUILayout.Label("Grip Lag > Left Grip", this.LabelStyle);
+                GUILayout.Label("Left Joystick Move > RecRoom", this.LabelStyle);
             }
             GUI.DragWindow(new Rect(0f, 0f, 10000f, 20f));
         }
@@ -364,6 +356,7 @@ namespace AsteroidLite
                     {
                         PhotonNetwork.LocalPlayer.CustomProperties.Add("AsteroidLite", "AsteroidLite");
                     }
+                    AsteroidLite.Libraries.Utilities.CustomBoards();
                     Debug.Log("[Asteroid] Menu initialization Complete!");
                     this.IsInit = true;
                 }
@@ -450,9 +443,9 @@ namespace AsteroidLite
                             Vector3 position = vrrig.headMesh.transform.position;
                             Vector3 position2 = GorillaTagger.Instance.offlineVRRig.head.rigTarget.position;
                             float num = Vector3.Distance(position, position2);
-                            if (GorillaTagger.Instance.offlineVRRig.setMatIndex == 1 || GorillaTagger.Instance.offlineVRRig.setMatIndex == 2 || GorillaTagger.Instance.offlineVRRig.setMatIndex == 13)
+                            if (RigManager.PlayerIsTagged(GorillaTagger.Instance.offlineVRRig))
                             {
-                                if (!vrrig.mainSkin.material.name.Contains("fected") && !Player.Instance.disableMovement && num < Plugin.TagAuraRange)
+                                if (!RigManager.PlayerIsTagged(vrrig) && !Player.Instance.disableMovement && num < Plugin.TagAuraRange)
                                 {
                                     Player.Instance.rightControllerTransform.position = position;
                                 }
@@ -646,7 +639,7 @@ namespace AsteroidLite
                             Transform report = line.reportButton.gameObject.transform;
                             if (AntiReportVis)
                             {
-                                VisualizeAura(report.position + new Vector3(-0.1f, 0f, -0.1f), AntiReportRange, Color.red);
+                                AsteroidLite.Libraries.Utilities.VisualizeAura(report.position + new Vector3(-0.1f, 0f, -0.1f), AntiReportRange, Color.red);
                             }
                             foreach (VRRig vrrig in GorillaParent.instance.vrrigs)
                             {
@@ -746,6 +739,19 @@ namespace AsteroidLite
                     else
                     {
                         surfaceOverrides = UnityEngine.Object.FindObjectsOfType<GorillaSurfaceOverride>();
+                    }
+                }
+                if (RecRoom)
+                {
+                    if (InputLibrary.LeftJoystickMove() > 0.2f)
+                    {
+                        Player.Instance.transform.position += Player.Instance.bodyCollider.transform.forward * RecRoomPower * Time.deltaTime;
+                        Player.Instance.transform.position += Player.Instance.bodyCollider.transform.right * RecRoomPower * Time.deltaTime;
+                    }
+                    if (InputLibrary.LeftJoystickMove() > -0.2f)
+                    {
+                        Player.Instance.transform.position += Player.Instance.bodyCollider.transform.forward * -RecRoomPower * Time.deltaTime;
+                        Player.Instance.transform.position += Player.Instance.bodyCollider.transform.right * -RecRoomPower * Time.deltaTime;
                     }
                 }
             }
