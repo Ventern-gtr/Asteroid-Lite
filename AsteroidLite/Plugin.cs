@@ -4,7 +4,6 @@ using GorillaLocomotion;
 using Photon.Pun;
 using System;
 using System.IO;
-using System.Linq;
 using System.Reflection;
 using UnityEngine;
 
@@ -151,6 +150,28 @@ namespace AsteroidLite
             GUI.backgroundColor = this.Orange;
             GUI.skin.button.fontStyle = FontStyle.Bold;
             GUI.skin.button.fontSize = 14;
+            if (GUI.Button(new Rect(375f, 0f, 25f, 20f), "!", this.ButtonStyle))
+            {
+                GUIOpen = false;
+                SpeedBoost = false;
+                TriggerBoost = false;
+                FlippedTrigger = false;
+                WallWalk = false;
+                TagAura = false;
+                Longjump = false;
+                Longarms = false;
+                PSA = false;
+                GripToLag = false;
+                Chams = false;
+                TargetChams = false;
+                AntiReport = false;
+                AntiReportVis = false;
+                AntiModerator = false;
+                LogModIDS = false;
+                ExtraVel = false;
+                RecRoom = false;
+                GorillaTagger.Instance.offlineVRRig.PlayHandTapLocal(Plugin.InfoTab ? 114 : 115, false, 0.2f);
+            }
             if (GUI.Button(new Rect(400f, 0f, 25f, 20f), "ⓘ", this.ButtonStyle))
             {
                 GorillaTagger.Instance.offlineVRRig.PlayHandTapLocal(Plugin.InfoTab ? 114 : 115, false, 0.2f);
@@ -340,6 +361,7 @@ namespace AsteroidLite
                 GUILayout.Label("PSA > RightJoystick", this.LabelStyle);
                 GUILayout.Label("Grip Lag > Left Grip", this.LabelStyle);
                 GUILayout.Label("Left Joystick Move > RecRoom", this.LabelStyle);
+                GUILayout.Label("Right Joystick Move > Pull", this.LabelStyle);
             }
             GUI.DragWindow(new Rect(0f, 0f, 10000f, 20f));
         }
@@ -471,7 +493,8 @@ namespace AsteroidLite
                 }
                 if (Plugin.PSA)
                 {
-                    Player.Instance.bodyCollider.attachedRigidbody.AddForce(ControllerInputPoller.instance.rightControllerPrimary2DAxis * 2, ForceMode.Acceleration);
+                    if (InputLibrary.LeftJoystickMoveY() > 0.2f)
+                        Player.Instance.transform.position += Player.Instance.bodyCollider.transform.forward * PSASpeed * Time.deltaTime;
                 }
                 if (Plugin.GripToLag)
                 {
@@ -738,17 +761,17 @@ namespace AsteroidLite
                     }
                     else
                     {
-                        surfaceOverrides = UnityEngine.Object.FindObjectsOfType<GorillaSurfaceOverride>();
+                         surfaceOverrides = UnityEngine.Object.FindObjectsOfType<GorillaSurfaceOverride>();
                     }
                 }
                 if (RecRoom)
                 {
-                    if (InputLibrary.LeftJoystickMove() > 0.2f)
+                    if (InputLibrary.LeftJoystickMoveX() > 0.2f)
                     {
-                        Player.Instance.transform.position += Player.Instance.bodyCollider.transform.forward * RecRoomPower * Time.deltaTime;
-                        Player.Instance.transform.position += Player.Instance.bodyCollider.transform.right * RecRoomPower * Time.deltaTime;
+                        Player.Instance.transform.position += Player.Instance.bodyCollider.transform.forward * RecRoomPower *  Time.deltaTime;
+                        Player.Instance.transform.position += Player.Instance.bodyCollider.transform.right * RecRoomPower *  Time.deltaTime;
                     }
-                    if (InputLibrary.LeftJoystickMove() > -0.2f)
+                    if (InputLibrary.LeftJoystickMoveX() > -0.2f)
                     {
                         Player.Instance.transform.position += Player.Instance.bodyCollider.transform.forward * -RecRoomPower * Time.deltaTime;
                         Player.Instance.transform.position += Player.Instance.bodyCollider.transform.right * -RecRoomPower * Time.deltaTime;

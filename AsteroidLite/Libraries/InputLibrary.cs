@@ -17,7 +17,7 @@ namespace AsteroidLite.Libraries
 
         #region LeftController
 
-        public static float LeftJoystickMove()
+        public static float LeftJoystickMoveX()
         {
             float result;
             if (IsSteam)
@@ -27,6 +27,20 @@ namespace AsteroidLite.Libraries
             else
             {
                 result = ControllerInputPoller.instance.leftControllerPrimary2DAxis.x;
+            }
+            return result;
+        }
+
+        public static float LeftJoystickMoveY()
+        {
+            float result;
+            if (IsSteam)
+            {
+                result = SteamVR_Actions.gorillaTag_LeftJoystick2DAxis.axis.y;
+            }
+            else
+            {
+                result = ControllerInputPoller.instance.leftControllerPrimary2DAxis.y;
             }
             return result;
         }
@@ -72,7 +86,7 @@ namespace AsteroidLite.Libraries
 
         #region Right Controller
 
-        public static float RightJoystickMove()
+        public static float RightJoystickMoveX()
         {
             float result;
             if (IsSteam)
@@ -85,6 +99,21 @@ namespace AsteroidLite.Libraries
             }
             return result;
         }
+
+        public static float RightJoystickMoveY()
+        {
+            float result;
+            if (IsSteam)
+            {
+                result = SteamVR_Actions.gorillaTag_RightJoystick2DAxis.axis.y;
+            }
+            else
+            {
+                result = ControllerInputPoller.instance.rightControllerPrimary2DAxis.y;
+            }
+            return result;
+        }
+
         public static bool RightJoystick()
         {
             bool result;

@@ -89,8 +89,11 @@ namespace AsteroidLite.Libraries
         public static void Cleanup()
         {
             if (parent != null)
-                if (parent.activeSelf)
-                    parent.SetActive(false);
+            {
+                parent.Destroy();
+                text = null;
+                last_notification = null;
+            }
         }
     }
 }
