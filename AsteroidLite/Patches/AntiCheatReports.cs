@@ -3,6 +3,7 @@ using Photon.Pun;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using AsteroidLite.Libraries;
 
 namespace AsteroidLite.Patches
 {
@@ -15,6 +16,7 @@ namespace AsteroidLite.Patches
             {
                 if (susId == PhotonNetwork.LocalPlayer.UserId)
                 {
+                    Notify.Send("Asteroid", $"Anticheat report - Reason:{susReason}", Plugin.AsteroidOrange);
                     susReason = null;
                     susNick = null;
                     susId = null;

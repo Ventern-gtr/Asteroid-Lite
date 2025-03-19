@@ -361,7 +361,6 @@ namespace AsteroidLite
                 GUILayout.Label("PSA > RightJoystick", this.LabelStyle);
                 GUILayout.Label("Grip Lag > Left Grip", this.LabelStyle);
                 GUILayout.Label("Left Joystick Move > RecRoom", this.LabelStyle);
-                GUILayout.Label("Right Joystick Move > Pull", this.LabelStyle);
             }
             GUI.DragWindow(new Rect(0f, 0f, 10000f, 20f));
         }
@@ -755,6 +754,17 @@ namespace AsteroidLite
                                         gorillaSurfaceOverride.extraVelMaxMultiplier = ExtraVelMax;
                                         gorillaSurfaceOverride.extraVelMultiplier = ExtraVelMin;
                                     }
+                                }
+                            }
+                        }
+                        else
+                        {
+                            foreach (GorillaSurfaceOverride gorillaSurfaceOverride in surfaceOverrides)
+                            {
+                                if (gorillaSurfaceOverride.extraVelMaxMultiplier != ExtraVelMin || gorillaSurfaceOverride.extraVelMultiplier != ExtraVelMin)
+                                {
+                                    gorillaSurfaceOverride.extraVelMaxMultiplier = ExtraVelMax;
+                                    gorillaSurfaceOverride.extraVelMultiplier = ExtraVelMin;
                                 }
                             }
                         }
