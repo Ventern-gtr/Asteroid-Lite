@@ -9,7 +9,7 @@ using UnityEngine;
 
 namespace AsteroidLite
 {
-    [BepInPlugin("Ventern.AsteroidLite", "Ventern - AsteroidLite", "1.0.0")]
+    [BepInPlugin("Ventern.AsteroidLite", "Ventern - AsteroidLite", "0.7")]
     public class Plugin : BaseUnityPlugin
     {
         internal void Start()
@@ -76,55 +76,58 @@ namespace AsteroidLite
 
         #region BackEnd Fields
         internal static bool GUIOpen = true;
-        internal Rect windowRect = new Rect(10f, 80f, 450f, 550f);
+        private Rect windowRect = new Rect(10f, 80f, 450f, 550f);
         internal GameObject Holder = null;
-        internal static bool GUIStyleInit = false;
-        internal GUIStyle WindowStyle;
-        internal GUIStyle ButtonStyle;
-        internal GUIStyle LabelStyle;
+        private static bool GUIStyleInit = false;
+        private GUIStyle WindowStyle;
+        private GUIStyle ButtonStyle;
+        private GUIStyle LabelStyle;
         internal Color Orange = new Color(1f, 0.4f, 0f);
         internal static Color AsteroidOrange = new Color(1f, 0.4f, 0f);
-        internal static bool InfoTab = false;
+        private static bool InfoTab = false;
         internal bool IsInit = false;
-        internal static Vector3 walkPos;
-        internal static Vector3 walkNormal;
-        internal Vector2 scrollPosition = Vector2.zero;
-        internal float contentHeight = 2400f;
+        private static Vector3 walkPos;
+        private static Vector3 walkNormal;
+        private Vector2 scrollPosition = Vector2.zero;
+        private float contentHeight = 2400f;
         internal static bool DontRepeat = false;
-        internal static GorillaSurfaceOverride[] surfaceOverrides;
+        internal static bool DontRepeat1 = false;
+        private static GorillaSurfaceOverride[] surfaceOverrides;
         #endregion BackEnd Fields
 
         #region Bool/Floats/Ints fields
-        internal static bool SpeedBoost = false;
-        internal static bool TriggerBoost = false;
-        internal static bool FlippedTrigger = false;
-        internal static float MaxJump = 6.5f;
-        internal static float JumpMulti = 1.1f;
-        internal static bool WallWalk = false;
-        internal static float WallWalkPower = 1f;
-        internal static float WallWalkPowerNeg = -1f;
-        internal static bool TagAura = false;
-        internal static float TagAuraRange = 1f;
-        internal static bool Longjump = false;
-        internal static float LongjumpMulti = 1f;
-        internal static bool Longarms = false;
-        internal static float LongarmsMulti = 1f;
-        internal static bool PSA = false;
-        internal static float PSASpeed = 1f;
-        internal static bool GripToLag = false;
-        internal static float LagAmmount = 1f;
-        internal static bool Chams = false;
-        internal static bool TargetChams = false;
-        internal static bool AntiReport = false;
-        internal static bool AntiReportVis = false;
-        internal static float AntiReportRange = 0.35f;
-        internal static bool AntiModerator = false;
-        internal static bool LogModIDS = false;
-        internal static bool ExtraVel = false;
-        internal static float ExtraVelMax = 1f;
-        internal static float ExtraVelMin = 1f;
-        internal static bool RecRoom = false;
-        internal static float RecRoomPower = 1f;
+        private static bool SpeedBoost = false;
+        private static bool TriggerBoost = false;
+        private static bool FlippedTrigger = false;
+        private static float MaxJump = 6.5f;
+        private static float JumpMulti = 1.1f;
+        private static bool WallWalk = false;
+        private static float WallWalkPower = 1f;
+        private static float WallWalkPowerNeg = -1f;
+        private static bool TagAura = false;
+        private static float TagAuraRange = 1f;
+        private static bool Longjump = false;
+        private static float LongjumpMulti = 1f;
+        private static bool Longarms = false;
+        private static float LongarmsMulti = 1f;
+        private static bool PSA = false;
+        private static float PSASpeed = 1f;
+        private static bool GripToLag = false;
+        private static float LagAmmount = 1f;
+        private static bool Chams = false;
+        private static bool TargetChams = false;
+        private static bool AntiReport = false;
+        private static bool AntiReportVis = false;
+        private static float AntiReportRange = 0.35f;
+        private static bool AntiModerator = false;
+        private static bool LogModIDS = false;
+        private static bool ExtraVel = false;
+        private static float ExtraVelMax = 1f;
+        private static float ExtraVelMin = 1f;
+        private static bool RecRoom = false;
+        private static float RecRoomPower = 1f;
+        private static bool DisableWind = false;
+        private static bool NoTagFreeze = false;
         #endregion Bool/Floats/Ints fields
 
         internal void RoundValues()
@@ -170,6 +173,8 @@ namespace AsteroidLite
                 LogModIDS = false;
                 ExtraVel = false;
                 RecRoom = false;
+                DisableWind = false;
+                NoTagFreeze = false;
                 GorillaTagger.Instance.offlineVRRig.PlayHandTapLocal(Plugin.InfoTab ? 114 : 115, false, 0.2f);
             }
             if (GUI.Button(new Rect(400f, 0f, 25f, 20f), "ⓘ", this.ButtonStyle))
@@ -348,6 +353,16 @@ namespace AsteroidLite
                         Plugin.LogModIDS = !Plugin.LogModIDS;
                         GorillaTagger.Instance.offlineVRRig.PlayHandTapLocal(Plugin.LogModIDS ? 114 : 115, false, 0.2f);
                     }
+                }
+                if (GUILayout.Button($"Disable Wind: {Plugin.DisableWind}", GUILayout.MaxWidth(420f)))
+                {
+                    Plugin.DisableWind = !Plugin.DisableWind;
+                    GorillaTagger.Instance.offlineVRRig.PlayHandTapLocal(Plugin.AntiModerator ? 114 : 115, false, 0.2f);
+                }
+                if (GUILayout.Button($"NoTagFreeze: {Plugin.NoTagFreeze}", GUILayout.MaxWidth(420f)))
+                {
+                    Plugin.NoTagFreeze = !Plugin.NoTagFreeze;
+                    GorillaTagger.Instance.offlineVRRig.PlayHandTapLocal(Plugin.AntiModerator ? 114 : 115, false, 0.2f);
                 }
                 GUI.EndScrollView();
             }
@@ -650,6 +665,18 @@ namespace AsteroidLite
                             }
                         }
                     }
+                    DontRepeat1 = true;
+                }
+                else
+                {
+                    if (DontRepeat1)
+                    foreach (VRRig vrrig in GorillaParent.instance.vrrigs)
+                    {
+                        if (!vrrig.isOfflineVRRig )
+                        vrrig.mainSkin.material.shader = Shader.Find("GorillaTag/UberShader");
+                        vrrig.mainSkin.material.color = vrrig.playerColor;
+                    }
+                    DontRepeat1 = false;
                 }
                 if (AntiReport && PhotonNetwork.InRoom)
                 {
@@ -688,7 +715,7 @@ namespace AsteroidLite
                         {
                             if (LogModIDS)
                             {
-                                string fileName = "Moderator ID: " + vrrig.OwningNetPlayer.NickName;
+                                string fileName = "Moderator ID: " + vrrig.OwningNetPlayer.UserId;
                                 if (!Directory.Exists("asteroid"))
                                 {
                                     Directory.CreateDirectory("asteroid");
@@ -716,7 +743,7 @@ namespace AsteroidLite
                                 {
                                     foreach (GorillaSurfaceOverride gorillaSurfaceOverride in surfaceOverrides)
                                     {
-                                        if (gorillaSurfaceOverride.extraVelMaxMultiplier != ExtraVelMin || gorillaSurfaceOverride.extraVelMultiplier != ExtraVelMin)
+                                        if (gorillaSurfaceOverride.extraVelMaxMultiplier != ExtraVelMax || gorillaSurfaceOverride.extraVelMultiplier != ExtraVelMin)
                                         {
                                             gorillaSurfaceOverride.extraVelMaxMultiplier = ExtraVelMax;
                                             gorillaSurfaceOverride.extraVelMultiplier = ExtraVelMin;
@@ -749,7 +776,7 @@ namespace AsteroidLite
                                 }
                                 foreach (GorillaSurfaceOverride gorillaSurfaceOverride in surfaceOverrides)
                                 {
-                                    if (gorillaSurfaceOverride.extraVelMaxMultiplier != ExtraVelMin || gorillaSurfaceOverride.extraVelMultiplier != ExtraVelMin)
+                                    if (gorillaSurfaceOverride.extraVelMaxMultiplier != ExtraVelMax || gorillaSurfaceOverride.extraVelMultiplier != ExtraVelMin)
                                     {
                                         gorillaSurfaceOverride.extraVelMaxMultiplier = ExtraVelMax;
                                         gorillaSurfaceOverride.extraVelMultiplier = ExtraVelMin;
@@ -761,7 +788,7 @@ namespace AsteroidLite
                         {
                             foreach (GorillaSurfaceOverride gorillaSurfaceOverride in surfaceOverrides)
                             {
-                                if (gorillaSurfaceOverride.extraVelMaxMultiplier != ExtraVelMin || gorillaSurfaceOverride.extraVelMultiplier != ExtraVelMin)
+                                if (gorillaSurfaceOverride.extraVelMaxMultiplier != ExtraVelMax || gorillaSurfaceOverride.extraVelMultiplier != ExtraVelMin)
                                 {
                                     gorillaSurfaceOverride.extraVelMaxMultiplier = ExtraVelMax;
                                     gorillaSurfaceOverride.extraVelMultiplier = ExtraVelMin;
@@ -786,6 +813,20 @@ namespace AsteroidLite
                         Player.Instance.transform.position += Player.Instance.bodyCollider.transform.forward * -RecRoomPower * Time.deltaTime;
                         Player.Instance.transform.position += Player.Instance.bodyCollider.transform.right * -RecRoomPower * Time.deltaTime;
                     }
+                }
+                if (DisableWind)
+                {
+                    GameObject force = GameObject.Find("Forest_ForceVolumes").gameObject;
+                    force.SetActive(false);
+                }
+                else
+                {
+                    GameObject force = GameObject.Find("Forest_ForceVolumes").gameObject;
+                    force.SetActive(true);
+                }
+                if (NoTagFreeze)
+                {
+                    Player.Instance.disableMovement = false;
                 }
             }
         }
