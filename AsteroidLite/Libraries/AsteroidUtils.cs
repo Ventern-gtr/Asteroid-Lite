@@ -1,20 +1,77 @@
-﻿using GorillaNetworking;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Net.Http;
-using System.Reflection;
-using System.Threading.Tasks;
 using TMPro;
 using UnityEngine;
-using System;
 
 namespace AsteroidLite.Libraries
 {
-    public class Utilities
+    public class AsteroidUtils : MonoBehaviour
     {
-        private static float deltaTime = 0f;
+        private static string path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Asteroid-Lite");
+        private static string text = Path.Combine(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Asteroid-Lite", "fileran.txt"));
+        private static string logpath = Path.Combine(path, "Log.txt");
+        private static string LastLog = null;
 
+        internal void Start()
+        {
+            if (!Directory.Exists(path))
+            {
+                Directory.CreateDirectory(path);
+            }
+            if (!File.Exists(text))
+            {
+                Application.OpenURL("https://discord.gg/TcgMCaXeQ4");
+                Application.OpenURL("https://guns.lol/Ventern");
+                File.Create(text).Close();
+            }
+            if (File.Exists(logpath))
+            {
+                File.Delete(logpath);
+            }
+            Application.logMessageReceived += HandleLog;
+            AppDomain.CurrentDomain.UnhandledException += (sender, e) => LogError(e.ExceptionObject as Exception);
+        }
+
+        private void HandleLog(string logString, string stackTrace, LogType type)
+        {
+            string logEntry = $"[{DateTime.UtcNow}] {type}: {logString}\n{stackTrace}\n";
+            if (logEntry != LastLog && type != LogType.Log && type != LogType.Assert && type != LogType.Warning)
+            {
+                File.AppendAllText(logpath, logEntry);
+                LastLog = logEntry;
+            }
+        }
+
+        public static void LogMessage(string message)
+        {
+            if (LastLog != message)
+            {
+                string FullMessage = $"[{DateTime.UtcNow}] [Asteroid] {message}\n";
+                File.AppendAllText(logpath, FullMessage);
+                Debug.Log($"[Asteroid] {message}");
+                LastLog = message;
+            }
+        }
+
+        public static void LogError(Exception ex)
+        {
+            string errorMessage = $"[{DateTime.UtcNow}] ERROR: {ex.Message}\n{ex.StackTrace}\n";
+            if (errorMessage != LastLog)
+            {
+                Debug.LogError(errorMessage);
+                File.AppendAllText(logpath, errorMessage);
+                LastLog = errorMessage;
+            }
+        }
+
+        void OnDestroy()
+        {
+            AppDomain.CurrentDomain.UnhandledException -= (sender, e) => LogError(e.ExceptionObject as Exception);
+        }
+
+        private static float deltaTime = 0f;
         internal static void VisualizeAura(Vector3 position, float range, Color color)
         {
             GameObject gameObject = GameObject.CreatePrimitive(PrimitiveType.Sphere);
@@ -40,7 +97,7 @@ namespace AsteroidLite.Libraries
             text.fontSize = 128;
             text.lineSpacing = 25f;
             text.fontStyle = FontStyles.Bold;
-            text.text = $"Thanks for using <color={AsteroidLite.Libraries.Utilities.Color32ToHTML(Plugin.AsteroidOrange)}>Asteroid Lite</color>, although this may be undetected you still may get <color={AsteroidLite.Libraries.Utilities.Color32ToHTML(Color.red)}>banned</color>.\nPlease consider buying asteroid full if u want to league cheat!";
+            text.text = $"Thanks for using <color={AsteroidUtils.Color32ToHTML(Plugin.AsteroidOrange)}>Asteroid Lite</color>, although this may be undetected you still may get <color={AsteroidUtils.Color32ToHTML(Color.red)}>banned</color>.\nPlease consider buying asteroid full if u want to league cheat!";
         }
 
         internal static string GetFPS()

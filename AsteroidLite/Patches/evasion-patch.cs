@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Security.Cryptography;
 using System.Text;
 using UnityEngine;
+using AsteroidLite.Libraries;
 
 namespace AsteroidLite.Patches
 {
@@ -18,7 +19,7 @@ namespace AsteroidLite.Patches
             string text2 = Convert.ToBase64String(GenerateRandomBytes(3))[..4].Replace("+", "G").Replace("/", "H");
             string text3 = BitConverter.ToString(GenerateRandomBytes(4)).Replace("-", "");
             string text4 = BitConverter.ToString(GenerateRandomBytes(4)).Replace("-", "");
-            Debug.Log("Spoofed HWID!");
+            AsteroidUtils.LogMessage("Spoofed HWID!");
             __result = $"{text}-{text2}-{text3}-{text4}";
             return false;
         }
@@ -37,7 +38,7 @@ namespace AsteroidLite.Patches
     {
         private static bool Prefix()
         {
-            Debug.Log("Blocked 'SendDeviceInfoToPlayFab'");
+            AsteroidUtils.LogMessage("Blocked 'SendDeviceInfoToPlayFab'");
             return false;
         }
     }
@@ -47,7 +48,7 @@ namespace AsteroidLite.Patches
     {
         private static bool Prefix()
         {
-            Debug.Log("Blocked 'ReportDeviceInfo'");
+            AsteroidUtils.LogMessage("Blocked 'ReportDeviceInfo'");
             return false;
         }
     }
@@ -66,7 +67,7 @@ namespace AsteroidLite.Patches
     {
         private static bool Prefix()
         {
-            Debug.Log("Blocked 'GetAdvertIdFromUnity'");
+            AsteroidUtils.LogMessage("Blocked 'GetAdvertIdFromUnity'");
             return false;
         }
     }
@@ -76,7 +77,7 @@ namespace AsteroidLite.Patches
     {
         private static bool Prefix()
         {
-            Debug.Log("Blocked 'AttributeInstall'");
+            AsteroidUtils.LogMessage("Blocked 'AttributeInstall'");
             return false;
         }
     }
@@ -86,7 +87,7 @@ namespace AsteroidLite.Patches
     {
         private static bool Prefix()
         {
-            Debug.Log("Blocked 'InitializeScreenTimeTracker'");
+            AsteroidUtils.LogMessage("Blocked 'InitializeScreenTimeTracker'");
             return false;
         }
     }

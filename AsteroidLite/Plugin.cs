@@ -1,33 +1,18 @@
-﻿using AsteroidLite.Libraries;
-using BepInEx;
+﻿using BepInEx;
 using GorillaLocomotion;
 using Photon.Pun;
+using Photon.Voice.Unity.UtilityScripts;
 using System;
 using System.IO;
 using System.Reflection;
 using UnityEngine;
+using AsteroidLite.Libraries;
 
 namespace AsteroidLite
 {
-    [BepInPlugin("Ventern.AsteroidLite", "Ventern - AsteroidLite", "0.7")]
+    [BepInPlugin("Ventern.AsteroidLite", "Ventern - AsteroidLite", "0.8")]
     public class Plugin : BaseUnityPlugin
     {
-        internal void Start()
-        {
-            string path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Ventern");
-            string text = Path.Combine(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Ventern", "AL-Fileran.txt"));
-            if (!Directory.Exists(path))
-            {
-                Directory.CreateDirectory(path);
-            }
-            if (!File.Exists(text))
-            {
-                Application.OpenURL("https://discord.gg/TcgMCaXeQ4");
-                Application.OpenURL("https://guns.lol/Ventern");
-                File.Create(text).Close();
-            }
-        }
-
         internal void OnGUI()
         {
             if (!Plugin.GUIStyleInit)
@@ -38,7 +23,7 @@ namespace AsteroidLite
                     this.WindowStyle.alignment = TextAnchor.UpperLeft;
                     this.WindowStyle.fontSize = 17;
                     this.WindowStyle.fontStyle = FontStyle.BoldAndItalic;
-                    Debug.Log("[Asteroid] WindowStyle Loaded");
+                    AsteroidUtils.LogMessage("WindowStyle Loaded");
                 }
                 if (this.ButtonStyle == null)
                 {
@@ -46,18 +31,19 @@ namespace AsteroidLite
                     this.ButtonStyle.alignment = TextAnchor.MiddleCenter;
                     this.ButtonStyle.fontSize = 12;
                     this.ButtonStyle.fontStyle = FontStyle.Bold;
-                    Debug.Log("[Asteroid] ButtonStyle Loaded");
+                    AsteroidUtils.LogMessage("ButtonStyle Loaded");
+                    
                 }
                 if (this.LabelStyle == null)
                 {
                     this.LabelStyle = new GUIStyle(GUI.skin.label);
                     this.LabelStyle.fontSize = 14;
                     this.LabelStyle.fontStyle = FontStyle.Bold;
-                    Debug.Log("[Asteroid] LabelStyle Loaded");
+                    AsteroidUtils.LogMessage("LabelStyle Loaded");
                 }
                 if (this.WindowStyle != null && this.ButtonStyle != null && this.LabelStyle != null)
                 {
-                    Debug.Log("[Asteroid] All GUI Styles Loaded");
+                    AsteroidUtils.LogMessage("All GUI Styles Loaded");
                     Plugin.GUIStyleInit = true;
                 }
             }
@@ -68,7 +54,7 @@ namespace AsteroidLite
                 GUI.contentColor = Color.red;
                 GUI.backgroundColor = Color.black;
                 string str = "PING: " + PhotonNetwork.GetPing().ToString();
-                string str2 = "Asteroid Lite | " + AsteroidLite.Libraries.Utilities.GetFPS() + " | " + str;
+                string str2 = "Asteroid Lite | " + AsteroidLite.Libraries.AsteroidUtils.GetFPS() + " | " + str;
                 GUI.Box(this.windowRect, string.Empty);
                 this.windowRect = GUI.Window(633, this.windowRect, new GUI.WindowFunction(this.Window), "<color=#FF3B00>" + str2 + "</color>", this.WindowStyle);
             }
@@ -384,7 +370,7 @@ namespace AsteroidLite
         {
             this.RoundValues();
             Notify.Run();
-            if (!this.IsInit && Player.Instance && PhotonNetwork.LocalPlayer != null && Plugin.GUIStyleInit)
+            if (!this.IsInit && Player.Instance && PhotonNetwork.LocalPlayer != null)
             {
                 if (this.Holder != null)
                 {
@@ -392,16 +378,20 @@ namespace AsteroidLite
                     {
                         PhotonNetwork.LocalPlayer.CustomProperties.Add("AsteroidLite", "AsteroidLite");
                     }
-                    AsteroidLite.Libraries.Utilities.CustomBoards();
-                    Debug.Log("[Asteroid] Menu initialization Complete!");
+                    AsteroidLite.Libraries.AsteroidUtils.CustomBoards();
+                    AsteroidUtils.LogMessage("Menu Initialization process completed!");
                     this.IsInit = true;
                 }
                 else
                 {
-                    Debug.Log("[Asteroid] Awaiting InputLibrary");
                     this.Holder = new GameObject("Holder");
+                    AsteroidUtils.LogMessage("Holder Created!");
+                    this.Holder.AddComponent<AsteroidLite.Libraries.AsteroidUtils>();
+                    AsteroidUtils.LogMessage("Utils Component!");
                     this.Holder.AddComponent<InputLibrary>();
-                    Debug.Log("[Asteroid] Input Library Loaded");
+                    AsteroidUtils.LogMessage("InputLibrary Component!");
+                    this.Holder.AddComponent<Notify>();
+                    AsteroidUtils.LogMessage("Notify Component!");
                 }
             }
             if (this.IsInit)
@@ -410,7 +400,7 @@ namespace AsteroidLite
                 {
                     GUIOpen = !GUIOpen;
                     GorillaTagger.Instance.offlineVRRig.PlayHandTapLocal(Plugin.GUIOpen ? 114 : 115, false, 0.2f);
-                    Debug.Log(Plugin.GUIOpen ? "[Asteroid] Menu Opened" : "[Asteroid] Menu Closed");
+                    AsteroidUtils.LogMessage(Plugin.GUIOpen ? "[Asteroid] Menu Opened" : "[Asteroid] Menu Closed");
                 }
                 if (Plugin.SpeedBoost)
                 {
@@ -594,7 +584,7 @@ namespace AsteroidLite
                                 {
                                     if (!RigManager.PlayerIsTagged(vrrig))
                                     {
-                                        AsteroidLite.Libraries.Utilities.FixRigMaterialESPColors(vrrig);
+                                        AsteroidLite.Libraries.AsteroidUtils.FixRigMaterialESPColors(vrrig);
                                         vrrig.mainSkin.material.shader = Shader.Find("GUI/Text Shader");
                                         vrrig.mainSkin.material.color = new Color(1f, 0.3f, 0.1f, 0.5f);
                                     }
@@ -611,7 +601,7 @@ namespace AsteroidLite
                                 {
                                     if (RigManager.PlayerIsTagged(vrrig))
                                     {
-                                        AsteroidLite.Libraries.Utilities.FixRigMaterialESPColors(vrrig);
+                                        AsteroidLite.Libraries.AsteroidUtils.FixRigMaterialESPColors(vrrig);
                                         vrrig.mainSkin.material.shader = Shader.Find("GUI/Text Shader");
                                         vrrig.mainSkin.material.color = new Color(1f, 0.3f, 0.1f, 0.5f);
                                     }
@@ -632,7 +622,7 @@ namespace AsteroidLite
                             {
                                 if (!vrrig.isOfflineVRRig)
                                 {
-                                    AsteroidLite.Libraries.Utilities.FixRigMaterialESPColors(vrrig);
+                                    AsteroidLite.Libraries.AsteroidUtils.FixRigMaterialESPColors(vrrig);
                                     if (!RigManager.PlayerIsTagged(vrrig))
                                     {
 
@@ -650,7 +640,7 @@ namespace AsteroidLite
                             {
                                 if (!vrrig.isOfflineVRRig)
                                 {
-                                    AsteroidLite.Libraries.Utilities.FixRigMaterialESPColors(vrrig);
+                                    AsteroidLite.Libraries.AsteroidUtils.FixRigMaterialESPColors(vrrig);
                                     if (RigManager.PlayerIsTagged(vrrig))
                                     {
                                         vrrig.mainSkin.material.shader = Shader.Find("GUI/Text Shader");
@@ -670,12 +660,14 @@ namespace AsteroidLite
                 else
                 {
                     if (DontRepeat1)
-                    foreach (VRRig vrrig in GorillaParent.instance.vrrigs)
-                    {
-                        if (!vrrig.isOfflineVRRig )
-                        vrrig.mainSkin.material.shader = Shader.Find("GorillaTag/UberShader");
-                        vrrig.mainSkin.material.color = vrrig.playerColor;
-                    }
+                        foreach (VRRig vrrig in GorillaParent.instance.vrrigs)
+                        {
+                            if (!vrrig.isOfflineVRRig)
+                            {
+                                vrrig.mainSkin.material.shader = Shader.Find("GorillaTag/UberShader");
+                                vrrig.mainSkin.material.color = vrrig.playerColor;
+                            }
+                        }
                     DontRepeat1 = false;
                 }
                 if (AntiReport && PhotonNetwork.InRoom)
@@ -688,7 +680,7 @@ namespace AsteroidLite
                             Transform report = line.reportButton.gameObject.transform;
                             if (AntiReportVis)
                             {
-                                AsteroidLite.Libraries.Utilities.VisualizeAura(report.position + new Vector3(-0.1f, 0f, -0.1f), AntiReportRange, Color.red);
+                                AsteroidLite.Libraries.AsteroidUtils.VisualizeAura(report.position + new Vector3(-0.1f, 0f, -0.1f), AntiReportRange, Color.red);
                             }
                             foreach (VRRig vrrig in GorillaParent.instance.vrrigs)
                             {
@@ -798,15 +790,15 @@ namespace AsteroidLite
                     }
                     else
                     {
-                         surfaceOverrides = UnityEngine.Object.FindObjectsOfType<GorillaSurfaceOverride>();
+                        surfaceOverrides = UnityEngine.Object.FindObjectsOfType<GorillaSurfaceOverride>();
                     }
                 }
                 if (RecRoom)
                 {
                     if (InputLibrary.LeftJoystickMoveX() > 0.2f)
                     {
-                        Player.Instance.transform.position += Player.Instance.bodyCollider.transform.forward * RecRoomPower *  Time.deltaTime;
-                        Player.Instance.transform.position += Player.Instance.bodyCollider.transform.right * RecRoomPower *  Time.deltaTime;
+                        Player.Instance.transform.position += Player.Instance.bodyCollider.transform.forward * RecRoomPower * Time.deltaTime;
+                        Player.Instance.transform.position += Player.Instance.bodyCollider.transform.right * RecRoomPower * Time.deltaTime;
                     }
                     if (InputLibrary.LeftJoystickMoveX() > -0.2f)
                     {

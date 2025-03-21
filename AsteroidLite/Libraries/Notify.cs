@@ -6,7 +6,7 @@ using TMPro;
 
 namespace AsteroidLite.Libraries
 {
-    public class Notify
+    public class Notify : MonoBehaviour
     {
         // Full credits to erik1515 / finn for making this | https://discord.gg/XxM2wWp33u
         public static void Create(string name, ref GameObject parent, ref TextMeshPro text, TextAlignmentOptions alignment, float size = 0.7f)
@@ -71,7 +71,7 @@ namespace AsteroidLite.Libraries
             {
                 if (parent.activeSelf)
                 {
-                    string display = $"<color=grey>[</color><color={Utilities.Color32ToHTML(color)}>{title}</color><color=grey>]</color> {notification}\n";
+                    string display = $"<color=grey>[</color><color={AsteroidUtils.Color32ToHTML(color)}>{title}</color><color=grey>]</color> {notification}\n";
                     if (!last_notification.Contains(display))
                     {
                         if (!text.text.Contains(display))
