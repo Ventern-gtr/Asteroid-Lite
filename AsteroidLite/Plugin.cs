@@ -370,7 +370,7 @@ namespace AsteroidLite
         {
             this.RoundValues();
             Notify.Run();
-            if (!this.IsInit && Player.Instance && PhotonNetwork.LocalPlayer != null)
+            if (!this.IsInit && GTPlayer.Instance && PhotonNetwork.LocalPlayer != null)
             {
                 if (this.Holder != null)
                 {
@@ -410,43 +410,43 @@ namespace AsteroidLite
                         {
                             if (InputLibrary.LeftTrigger())
                             {
-                                Player.Instance.maxJumpSpeed = Plugin.MaxJump;
-                                Player.Instance.jumpMultiplier = Plugin.JumpMulti;
+                                GTPlayer.Instance.maxJumpSpeed = Plugin.MaxJump;
+                                GTPlayer.Instance.jumpMultiplier = Plugin.JumpMulti;
                                 return;
                             }
-                            Player.Instance.maxJumpSpeed = 6.5f;
-                            Player.Instance.jumpMultiplier = 1.1f;
+                            GTPlayer.Instance.maxJumpSpeed = 6.5f;
+                            GTPlayer.Instance.jumpMultiplier = 1.1f;
                         }
                         else
                         {
                             if (InputLibrary.LeftTrigger())
                             {
-                                Player.Instance.maxJumpSpeed = 6.5f;
-                                Player.Instance.jumpMultiplier = 1.1f;
+                                GTPlayer.Instance.maxJumpSpeed = 6.5f;
+                                GTPlayer.Instance.jumpMultiplier = 1.1f;
                                 return;
                             }
-                            Player.Instance.maxJumpSpeed = Plugin.MaxJump;
-                            Player.Instance.jumpMultiplier = Plugin.JumpMulti;
+                            GTPlayer.Instance.maxJumpSpeed = Plugin.MaxJump;
+                            GTPlayer.Instance.jumpMultiplier = Plugin.JumpMulti;
                         }
                     }
                     else
                     {
-                        Player.Instance.maxJumpSpeed = Plugin.MaxJump;
-                        Player.Instance.jumpMultiplier = Plugin.JumpMulti;
+                        GTPlayer.Instance.maxJumpSpeed = Plugin.MaxJump;
+                        GTPlayer.Instance.jumpMultiplier = Plugin.JumpMulti;
                     }
                 }
                 else
                 {
-                    Player.Instance.maxJumpSpeed = 6.5f;
-                    Player.Instance.jumpMultiplier = 1.1f;
+                    GTPlayer.Instance.maxJumpSpeed = 6.5f;
+                    GTPlayer.Instance.jumpMultiplier = 1.1f;
                     Plugin.MaxJump = 6.5f;
                     Plugin.JumpMulti = 1.1f;
                 }
                 if (Plugin.WallWalk)
                 {
-                    if (Player.Instance.wasLeftHandColliding || Player.Instance.wasRightHandColliding)
+                    if (GTPlayer.Instance.wasLeftHandColliding || GTPlayer.Instance.wasRightHandColliding)
                     {
-                        RaycastHit raycastHit = (RaycastHit)typeof(Player).GetField("lastHitInfoHand", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(Player.Instance);
+                        RaycastHit raycastHit = (RaycastHit)typeof(GTPlayer).GetField("lastHitInfoHand", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(GTPlayer.Instance);
                         Plugin.walkPos = raycastHit.point;
                         Plugin.walkNormal = raycastHit.normal;
                     }
@@ -455,8 +455,8 @@ namespace AsteroidLite
                         if (Plugin.walkPos != Vector3.zero)
                         {
                             Plugin.WallWalkPowerNeg = -Plugin.WallWalkPower;
-                            Player.Instance.bodyCollider.attachedRigidbody.AddForce(Plugin.walkNormal * Plugin.WallWalkPowerNeg, ForceMode.Acceleration);
-                            Player.Instance.bodyCollider.attachedRigidbody.AddForce(Vector3.up * (Time.deltaTime * (Plugin.WallWalkPower / Time.deltaTime)), ForceMode.Acceleration);
+                            GTPlayer.Instance.bodyCollider.attachedRigidbody.AddForce(Plugin.walkNormal * Plugin.WallWalkPowerNeg, ForceMode.Acceleration);
+                            GTPlayer.Instance.bodyCollider.attachedRigidbody.AddForce(Vector3.up * (Time.deltaTime * (Plugin.WallWalkPower / Time.deltaTime)), ForceMode.Acceleration);
                         }
                     }
                 }
@@ -471,9 +471,9 @@ namespace AsteroidLite
                             float num = Vector3.Distance(position, position2);
                             if (RigManager.PlayerIsTagged(GorillaTagger.Instance.offlineVRRig))
                             {
-                                if (!RigManager.PlayerIsTagged(vrrig) && !Player.Instance.disableMovement && num < Plugin.TagAuraRange)
+                                if (!RigManager.PlayerIsTagged(vrrig) && !GTPlayer.Instance.disableMovement && num < Plugin.TagAuraRange)
                                 {
-                                    Player.Instance.rightControllerTransform.position = position;
+                                    GTPlayer.Instance.rightControllerTransform.position = position;
                                 }
                             }
                         }
@@ -483,22 +483,22 @@ namespace AsteroidLite
                 {
                     if (InputLibrary.RightTrigger())
                     {
-                        Player.Instance.maxJumpSpeed = 10f;
-                        Player.Instance.jumpMultiplier = Plugin.JumpMulti * Plugin.LongjumpMulti;
+                        GTPlayer.Instance.maxJumpSpeed = 10f;
+                        GTPlayer.Instance.jumpMultiplier = Plugin.JumpMulti * Plugin.LongjumpMulti;
                         return;
                     }
-                    Player.Instance.maxJumpSpeed = Plugin.MaxJump;
-                    Player.Instance.jumpMultiplier = Plugin.JumpMulti;
+                    GTPlayer.Instance.maxJumpSpeed = Plugin.MaxJump;
+                    GTPlayer.Instance.jumpMultiplier = Plugin.JumpMulti;
                 }
                 if (Plugin.Longarms)
                 {
-                    Player.Instance.leftControllerTransform.transform.position = GorillaTagger.Instance.headCollider.transform.position - (GorillaTagger.Instance.headCollider.transform.position - GorillaTagger.Instance.leftHandTransform.position) * Plugin.LongarmsMulti;
-                    Player.Instance.rightControllerTransform.transform.position = GorillaTagger.Instance.headCollider.transform.position - (GorillaTagger.Instance.headCollider.transform.position - GorillaTagger.Instance.rightHandTransform.position) * Plugin.LongarmsMulti;
+                    GTPlayer.Instance.leftControllerTransform.transform.position = GorillaTagger.Instance.headCollider.transform.position - (GorillaTagger.Instance.headCollider.transform.position - GorillaTagger.Instance.leftHandTransform.position) * Plugin.LongarmsMulti;
+                    GTPlayer.Instance.rightControllerTransform.transform.position = GorillaTagger.Instance.headCollider.transform.position - (GorillaTagger.Instance.headCollider.transform.position - GorillaTagger.Instance.rightHandTransform.position) * Plugin.LongarmsMulti;
                 }
                 if (Plugin.PSA)
                 {
                     if (InputLibrary.LeftJoystickMoveY() > 0.2f)
-                        Player.Instance.transform.position += Player.Instance.bodyCollider.transform.forward * PSASpeed * Time.deltaTime;
+                        GTPlayer.Instance.transform.position += GTPlayer.Instance.bodyCollider.transform.forward * PSASpeed * Time.deltaTime;
                 }
                 if (Plugin.GripToLag)
                 {
@@ -797,13 +797,13 @@ namespace AsteroidLite
                 {
                     if (InputLibrary.LeftJoystickMoveX() > 0.2f)
                     {
-                        Player.Instance.transform.position += Player.Instance.bodyCollider.transform.forward * RecRoomPower * Time.deltaTime;
-                        Player.Instance.transform.position += Player.Instance.bodyCollider.transform.right * RecRoomPower * Time.deltaTime;
+                        GTPlayer.Instance.transform.position += GTPlayer.Instance.bodyCollider.transform.forward * RecRoomPower * Time.deltaTime;
+                        GTPlayer.Instance.transform.position += GTPlayer.Instance.bodyCollider.transform.right * RecRoomPower * Time.deltaTime;
                     }
                     if (InputLibrary.LeftJoystickMoveX() > -0.2f)
                     {
-                        Player.Instance.transform.position += Player.Instance.bodyCollider.transform.forward * -RecRoomPower * Time.deltaTime;
-                        Player.Instance.transform.position += Player.Instance.bodyCollider.transform.right * -RecRoomPower * Time.deltaTime;
+                        GTPlayer.Instance.transform.position += GTPlayer.Instance.bodyCollider.transform.forward * -RecRoomPower * Time.deltaTime;
+                        GTPlayer.Instance.transform.position += GTPlayer.Instance.bodyCollider.transform.right * -RecRoomPower * Time.deltaTime;
                     }
                 }
                 if (DisableWind)
@@ -818,7 +818,7 @@ namespace AsteroidLite
                 }
                 if (NoTagFreeze)
                 {
-                    Player.Instance.disableMovement = false;
+                    GTPlayer.Instance.disableMovement = false;
                 }
             }
         }
