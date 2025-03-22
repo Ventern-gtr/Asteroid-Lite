@@ -10,7 +10,7 @@ namespace AsteroidLite.Libraries
     public class AsteroidUtils : MonoBehaviour
     {
         private static string path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Asteroid-Lite");
-        private static string text = Path.Combine(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Asteroid-Lite", "fileran.txt"));
+        private static string text = Path.Combine(path, "fileran.txt");
         private static string logpath = Path.Combine(path, "Log.txt");
         private static string LastLog = null;
 
@@ -30,6 +30,7 @@ namespace AsteroidLite.Libraries
             {
                 File.Delete(logpath);
             }
+
             Application.logMessageReceived += HandleLog;
             AppDomain.CurrentDomain.UnhandledException += (sender, e) => LogError(e.ExceptionObject as Exception);
         }

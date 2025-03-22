@@ -10,12 +10,12 @@ using AsteroidLite.Libraries;
 
 namespace AsteroidLite
 {
-    [BepInPlugin("Ventern.AsteroidLite", "Ventern - AsteroidLite", "0.8")]
+    [BepInPlugin("Ventern.AsteroidLite", "Ventern - AsteroidLite", "1.0")]
     public class Plugin : BaseUnityPlugin
     {
         internal void OnGUI()
         {
-            if (!Plugin.GUIStyleInit)
+            if (!Plugin.GUIStyleInit && IsInit)
             {
                 if (this.WindowStyle == null)
                 {
@@ -79,41 +79,42 @@ namespace AsteroidLite
         internal static bool DontRepeat = false;
         internal static bool DontRepeat1 = false;
         private static GorillaSurfaceOverride[] surfaceOverrides;
+        private static ForceVolume[] forceVolumes;
         #endregion BackEnd Fields
 
         #region Bool/Floats/Ints fields
-        private static bool SpeedBoost = false;
-        private static bool TriggerBoost = false;
-        private static bool FlippedTrigger = false;
-        private static float MaxJump = 6.5f;
-        private static float JumpMulti = 1.1f;
-        private static bool WallWalk = false;
-        private static float WallWalkPower = 1f;
-        private static float WallWalkPowerNeg = -1f;
-        private static bool TagAura = false;
-        private static float TagAuraRange = 1f;
-        private static bool Longjump = false;
-        private static float LongjumpMulti = 1f;
-        private static bool Longarms = false;
-        private static float LongarmsMulti = 1f;
-        private static bool PSA = false;
-        private static float PSASpeed = 1f;
-        private static bool GripToLag = false;
-        private static float LagAmmount = 1f;
-        private static bool Chams = false;
-        private static bool TargetChams = false;
-        private static bool AntiReport = false;
-        private static bool AntiReportVis = false;
-        private static float AntiReportRange = 0.35f;
-        private static bool AntiModerator = false;
-        private static bool LogModIDS = false;
-        private static bool ExtraVel = false;
-        private static float ExtraVelMax = 1f;
-        private static float ExtraVelMin = 1f;
-        private static bool RecRoom = false;
-        private static float RecRoomPower = 1f;
-        private static bool DisableWind = false;
-        private static bool NoTagFreeze = false;
+        internal static bool SpeedBoost = false;
+        internal static bool TriggerBoost = false;
+        internal static bool FlippedTrigger = false;
+        internal static float MaxJump = 6.5f;
+        internal static float JumpMulti = 1.1f;
+        internal static bool WallWalk = false;
+        internal static float WallWalkPower = 1f;
+        internal static float WallWalkPowerNeg = -1f;
+        internal static bool TagAura = false;
+        internal static float TagAuraRange = 1f;
+        internal static bool Longjump = false;
+        internal static float LongjumpMulti = 1f;
+        internal static bool Longarms = false;
+        internal static float LongarmsMulti = 1f;
+        internal static bool PSA = false;
+        internal static float PSASpeed = 1f;
+        internal static bool GripToLag = false;
+        internal static float LagAmmount = 1f;
+        internal static bool Chams = false;
+        internal static bool TargetChams = false;
+        internal static bool AntiReport = false;
+        internal static bool AntiReportVis = false;
+        internal static float AntiReportRange = 0.35f;
+        internal static bool AntiModerator = false;
+        internal static bool LogModIDS = false;
+        internal static bool ExtraVel = false;
+        internal static float ExtraVelMax = 1f;
+        internal static float ExtraVelMin = 1f;
+        internal static bool RecRoom = false;
+        internal static float RecRoomPower = 1f;
+        internal static bool DisableWind = false;
+        internal static bool NoTagFreeze = false;
         #endregion Bool/Floats/Ints fields
 
         internal void RoundValues()
@@ -369,7 +370,6 @@ namespace AsteroidLite
         internal void Update()
         {
             this.RoundValues();
-            Notify.Run();
             if (!this.IsInit && GTPlayer.Instance && PhotonNetwork.LocalPlayer != null)
             {
                 if (this.Holder != null)
@@ -385,7 +385,6 @@ namespace AsteroidLite
                 else
                 {
                     this.Holder = new GameObject("Holder");
-                    AsteroidUtils.LogMessage("Holder Created!");
                     this.Holder.AddComponent<AsteroidLite.Libraries.AsteroidUtils>();
                     AsteroidUtils.LogMessage("Utils Component!");
                     this.Holder.AddComponent<InputLibrary>();
@@ -808,13 +807,31 @@ namespace AsteroidLite
                 }
                 if (DisableWind)
                 {
-                    GameObject force = GameObject.Find("Forest_ForceVolumes").gameObject;
-                    force.SetActive(false);
+                    if (forceVolumes != null)
+                    {
+                        foreach (ForceVolume forceVolume in forceVolumes)
+                        {
+                            forceVolume.enabled = false;
+                        }
+                    }
+                    else
+                    {
+                        forceVolumes = UnityEngine.Object.FindObjectsOfType<ForceVolume>();
+                    }
                 }
                 else
                 {
-                    GameObject force = GameObject.Find("Forest_ForceVolumes").gameObject;
-                    force.SetActive(true);
+                    if (forceVolumes != null)
+                    {
+                        foreach (ForceVolume forceVolume in forceVolumes)
+                        {
+                            forceVolume.enabled = true;
+                        }
+                    }
+                    else
+                    {
+                        forceVolumes = UnityEngine.Object.FindObjectsOfType<ForceVolume>();
+                    }
                 }
                 if (NoTagFreeze)
                 {

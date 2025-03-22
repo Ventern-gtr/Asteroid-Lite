@@ -33,6 +33,12 @@ namespace AsteroidLite.Libraries
         private static string last_notification = string.Empty;
         private static float cooldown;
 
+        private void Update()
+        {
+            if (parent = null)
+            Run();
+        }
+
         public static void Run()
         {
             if (parent == null)
