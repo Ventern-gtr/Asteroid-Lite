@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
+using System.Threading.Tasks;
 using TMPro;
 using UnityEngine;
 
@@ -134,6 +136,15 @@ namespace AsteroidLite.Libraries
                 rig.mainSkin.sharedMesh.colors32 = Enumerable.Repeat((Color32)Color.white, rig.mainSkin.sharedMesh.colors32.Length).ToArray();
                 rig.mainSkin.sharedMesh.colors = Enumerable.Repeat(Color.white, rig.mainSkin.sharedMesh.colors.Length).ToArray();
             }
+        }
+
+        static readonly HttpClient client = new HttpClient();
+
+        public static async Task<string> DownloadRawFileAsync(string rawUrl)
+        {
+            var response = await client.GetAsync(rawUrl);
+            response.EnsureSuccessStatusCode();
+            return await response.Content.ReadAsStringAsync();
         }
     }
 }

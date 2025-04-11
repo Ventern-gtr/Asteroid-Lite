@@ -1,12 +1,11 @@
-﻿using BepInEx;
+﻿using AsteroidLite.Libraries;
+using BepInEx;
 using GorillaLocomotion;
 using Photon.Pun;
-using Photon.Voice.Unity.UtilityScripts;
 using System;
 using System.IO;
 using System.Reflection;
 using UnityEngine;
-using AsteroidLite.Libraries;
 
 namespace AsteroidLite
 {
@@ -32,7 +31,7 @@ namespace AsteroidLite
                     this.ButtonStyle.fontSize = 12;
                     this.ButtonStyle.fontStyle = FontStyle.Bold;
                     AsteroidUtils.LogMessage("ButtonStyle Loaded");
-                    
+
                 }
                 if (this.LabelStyle == null)
                 {
@@ -115,6 +114,7 @@ namespace AsteroidLite
         internal static float RecRoomPower = 1f;
         internal static bool DisableWind = false;
         internal static bool NoTagFreeze = false;
+        internal static bool NoLeaves = false;
         #endregion Bool/Floats/Ints fields
 
         internal void RoundValues()
@@ -344,12 +344,18 @@ namespace AsteroidLite
                 if (GUILayout.Button($"Disable Wind: {Plugin.DisableWind}", GUILayout.MaxWidth(420f)))
                 {
                     Plugin.DisableWind = !Plugin.DisableWind;
-                    GorillaTagger.Instance.offlineVRRig.PlayHandTapLocal(Plugin.AntiModerator ? 114 : 115, false, 0.2f);
+                    GorillaTagger.Instance.offlineVRRig.PlayHandTapLocal(Plugin.DisableWind ? 114 : 115, false, 0.2f);
                 }
                 if (GUILayout.Button($"NoTagFreeze: {Plugin.NoTagFreeze}", GUILayout.MaxWidth(420f)))
                 {
                     Plugin.NoTagFreeze = !Plugin.NoTagFreeze;
-                    GorillaTagger.Instance.offlineVRRig.PlayHandTapLocal(Plugin.AntiModerator ? 114 : 115, false, 0.2f);
+                    GorillaTagger.Instance.offlineVRRig.PlayHandTapLocal(Plugin.NoTagFreeze ? 114 : 115, false, 0.2f);
+                }
+
+                if (GUILayout.Button($"NoLeaves: {Plugin.NoLeaves}", GUILayout.MaxWidth(420f)))
+                {
+                    Plugin.NoLeaves = !Plugin.NoLeaves;
+                    GorillaTagger.Instance.offlineVRRig.PlayHandTapLocal(Plugin.NoLeaves ? 114 : 115, false, 0.2f);
                 }
                 GUI.EndScrollView();
             }
@@ -836,6 +842,42 @@ namespace AsteroidLite
                 if (NoTagFreeze)
                 {
                     GTPlayer.Instance.disableMovement = false;
+                }
+                if (NoLeaves)
+                {
+
+                }
+            }
+        }
+
+        public static async void ToggleLeaves(bool disabled)
+        {
+            string LeavesGameobject = await AsteroidUtils.DownloadRawFileAsync("https://raw.githubusercontent.com/user/repo/branch/file.txt");
+            if (disabled)
+            {
+                if (GameObject.Find("Forest").gameObject.activeSelf)
+                {
+                    GameObject gameObject2 = GameObject.Find("Environment Objects/LocalObjects_Prefab/Forest");
+                    foreach (object obj2 in ((gameObject2 != null) ? gameObject2.transform : null))
+                    {
+                        Transform transform2 = (Transform)obj2;
+                        if (transform2.name == LeavesGameobject)
+                        {
+                            transform2.gameObject.SetActive(false);
+                        }
+                    }
+                }
+            }
+            if (GameObject.Find("Forest").gameObject.activeSelf)
+            {
+                GameObject gameObject2 = GameObject.Find("Environment Objects/LocalObjects_Prefab/Forest");
+                foreach (object obj2 in ((gameObject2 != null) ? gameObject2.transform : null))
+                {
+                    Transform transform2 = (Transform)obj2;
+                    if (transform2.name == LeavesGameobject)
+                    {
+                        transform2.gameObject.SetActive(true);
+                    }
                 }
             }
         }
