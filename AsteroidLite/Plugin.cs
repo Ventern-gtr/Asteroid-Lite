@@ -374,7 +374,6 @@ namespace AsteroidLite
                     Plugin.NoLeaves = !Plugin.NoLeaves;
                     GorillaTagger.Instance.offlineVRRig.PlayHandTapLocal(Plugin.NoLeaves ? 114 : 115, false, 0.2f);
                 }
-                GUILayout.TextArea(LeavesGameobject);
                 GUI.EndScrollView();
             }
             else
