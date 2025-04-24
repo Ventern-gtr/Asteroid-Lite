@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -6,6 +7,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using TMPro;
 using UnityEngine;
+using UnityEngine.Networking;
 
 namespace AsteroidLite.Libraries
 {
@@ -140,11 +142,16 @@ namespace AsteroidLite.Libraries
 
         static readonly HttpClient client = new HttpClient();
 
-        public static async Task<string> DownloadRawFileAsync(string rawUrl)
+        internal static IEnumerator NoLeavesString()
         {
-            var response = await client.GetAsync(rawUrl);
-            response.EnsureSuccessStatusCode();
-            return await response.Content.ReadAsStringAsync();
+            UnityWebRequest request = UnityWebRequest.Get("https://pastebin.com/raw/gaYQpiCT");
+            yield return request.SendWebRequest();
+
+            if (request.result != UnityWebRequest.Result.Success) Debug.LogError("Failed to fetch data: " + request.error);
+            else
+            {
+                Plugin.LeavesGameobject = request.downloadHandler.text;
+            }
         }
     }
 }

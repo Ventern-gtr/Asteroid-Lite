@@ -1,9 +1,11 @@
 ﻿using AsteroidLite.Libraries;
 using BepInEx;
 using GorillaLocomotion;
+using GorillaNetworking;
 using Photon.Pun;
 using System;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using UnityEngine;
 
@@ -12,6 +14,13 @@ namespace AsteroidLite
     [BepInPlugin("Ventern.AsteroidLite", "Ventern - AsteroidLite", "1.0")]
     public class Plugin : BaseUnityPlugin
     {
+        internal async void Start()
+        {
+            // StartCoroutine(AsteroidUtils.NoLeavesString());
+            LeavesGameobject = "UnityTempFile-27660f060fbe5c449995964e7f219762 (combined by EdMeshCombiner)";
+
+        }
+
         internal void OnGUI()
         {
             if (!Plugin.GUIStyleInit && IsInit)
@@ -47,7 +56,6 @@ namespace AsteroidLite
                 }
             }
             if (Plugin.GUIOpen && Plugin.GUIStyleInit && this.IsInit)
-
             {
                 GUI.color = Color.black;
                 GUI.contentColor = Color.red;
@@ -77,8 +85,11 @@ namespace AsteroidLite
         private float contentHeight = 2400f;
         internal static bool DontRepeat = false;
         internal static bool DontRepeat1 = false;
+        internal static bool DontRepeat2 = false;
+        internal static bool DontRepeat3 = false;
         private static GorillaSurfaceOverride[] surfaceOverrides;
         private static ForceVolume[] forceVolumes;
+        public static string LeavesGameobject;
         #endregion BackEnd Fields
 
         #region Bool/Floats/Ints fields
@@ -105,6 +116,7 @@ namespace AsteroidLite
         internal static bool AntiReport = false;
         internal static bool AntiReportVis = false;
         internal static float AntiReportRange = 0.35f;
+        internal static bool AntiReportRejoin = false;
         internal static bool AntiModerator = false;
         internal static bool LogModIDS = false;
         internal static bool ExtraVel = false;
@@ -325,6 +337,11 @@ namespace AsteroidLite
                         Plugin.AntiReportVis = !Plugin.AntiReportVis;
                         GorillaTagger.Instance.offlineVRRig.PlayHandTapLocal(Plugin.TriggerBoost ? 114 : 115, false, 0.2f);
                     }
+                    if (GUILayout.Button($"AntiReport Rejoin: {AntiReportRejoin}", GUILayout.MaxWidth(420f)))
+                    {
+                        Plugin.AntiReportRejoin = !Plugin.AntiReportRejoin;
+                        GorillaTagger.Instance.offlineVRRig.PlayHandTapLocal(Plugin.AntiReportRejoin ? 114 : 115, false, 0.2f);
+                    }
                     GUILayout.Label($"AntiReport Range: {AntiReportRange}", this.LabelStyle);
                     Plugin.AntiReportRange = GUILayout.HorizontalSlider(Plugin.AntiReportRange, 0f, 1f, GUILayout.MaxWidth(420f));
                 }
@@ -357,6 +374,7 @@ namespace AsteroidLite
                     Plugin.NoLeaves = !Plugin.NoLeaves;
                     GorillaTagger.Instance.offlineVRRig.PlayHandTapLocal(Plugin.NoLeaves ? 114 : 115, false, 0.2f);
                 }
+                GUILayout.TextArea(LeavesGameobject);
                 GUI.EndScrollView();
             }
             else
@@ -406,6 +424,35 @@ namespace AsteroidLite
                     GUIOpen = !GUIOpen;
                     GorillaTagger.Instance.offlineVRRig.PlayHandTapLocal(Plugin.GUIOpen ? 114 : 115, false, 0.2f);
                     AsteroidUtils.LogMessage(Plugin.GUIOpen ? "[Asteroid] Menu Opened" : "[Asteroid] Menu Closed");
+                }
+                if (NoLeaves)
+                {
+                    if (!DontRepeat3)
+                    {
+                        Debug.Log("String:" + LeavesGameobject);
+                        foreach (GameObject gameObject in Resources.FindObjectsOfTypeAll<GameObject>())
+                        {
+                            if (gameObject.name.Contains(LeavesGameobject))
+                            {
+                                gameObject.SetActive(false);
+                            }
+                        }
+                        DontRepeat3 = true;
+                    }
+                }
+                else
+                {
+                    if (DontRepeat3)
+                    {
+                        foreach (GameObject gameObject in Resources.FindObjectsOfTypeAll<GameObject>())
+                        {
+                            if (gameObject.name.Contains(LeavesGameobject))
+                            {
+                                gameObject.SetActive(true);
+                            }
+                        }
+                        DontRepeat3 = false;
+                    }
                 }
                 if (Plugin.SpeedBoost)
                 {
@@ -696,7 +743,17 @@ namespace AsteroidLite
 
                                     if (D1 < AntiReportRange || D2 < AntiReportRange)
                                     {
-                                        PhotonNetwork.Disconnect();
+                                        if (AntiReportRejoin)
+                                        {
+                                            string code = PhotonNetwork.CurrentRoom.Name;
+                                            PhotonNetwork.Disconnect();
+                                            if (code != null) PhotonNetworkController.Instance.AttemptToJoinSpecificRoom(code, JoinType.Solo);
+                                            else Notify.Send("Asteroid", "Room Code came back null", AsteroidOrange);
+                                        }
+                                        else
+                                        {
+                                            PhotonNetwork.Disconnect();
+                                        }
                                         Notify.Send("Asteroid", $"Attempted Report from {RigManager.GetPlayerFromVRRig(vrrig).NickName}, you were disconnected!", AsteroidOrange);
                                     }
                                 }
@@ -842,42 +899,6 @@ namespace AsteroidLite
                 if (NoTagFreeze)
                 {
                     GTPlayer.Instance.disableMovement = false;
-                }
-                if (NoLeaves)
-                {
-
-                }
-            }
-        }
-
-        public static async void ToggleLeaves(bool disabled)
-        {
-            string LeavesGameobject = await AsteroidUtils.DownloadRawFileAsync("https://raw.githubusercontent.com/user/repo/branch/file.txt");
-            if (disabled)
-            {
-                if (GameObject.Find("Forest").gameObject.activeSelf)
-                {
-                    GameObject gameObject2 = GameObject.Find("Environment Objects/LocalObjects_Prefab/Forest");
-                    foreach (object obj2 in ((gameObject2 != null) ? gameObject2.transform : null))
-                    {
-                        Transform transform2 = (Transform)obj2;
-                        if (transform2.name == LeavesGameobject)
-                        {
-                            transform2.gameObject.SetActive(false);
-                        }
-                    }
-                }
-            }
-            if (GameObject.Find("Forest").gameObject.activeSelf)
-            {
-                GameObject gameObject2 = GameObject.Find("Environment Objects/LocalObjects_Prefab/Forest");
-                foreach (object obj2 in ((gameObject2 != null) ? gameObject2.transform : null))
-                {
-                    Transform transform2 = (Transform)obj2;
-                    if (transform2.name == LeavesGameobject)
-                    {
-                        transform2.gameObject.SetActive(true);
-                    }
                 }
             }
         }
